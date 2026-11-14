@@ -1,0 +1,5109 @@
+{
+ "config/bad_late_run_key_beats_nothing": {
+  "error": "baton.toml: run.min_free_mb must be at least 0, got -1"
+ },
+ "config/bad_run_and_bad_provider": {
+  "error": "baton.toml: providers.claude.bin must be a string, not 5"
+ },
+ "config/bad_toml": {
+  "error": "baton.toml: Expected ']' at the end of a table declaration (at line 1, column 5)"
+ },
+ "config/browser_smoke_not_table": {
+  "error": "baton.toml: [browser_smoke] must be a table"
+ },
+ "config/codex_disabled_default_start": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": false,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "s"
+      }
+     }
+    },
+    "work_types": {}
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "claude",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/env_limited_action_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/existing_branch_empty_string": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/full": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {
+    "node_dir": "../web"
+   },
+   "commit_leftovers": false,
+   "common_prompt": null,
+   "default_base": "develop",
+   "env_limited_action": "retry_other_provider",
+   "existing_branch": "rebase",
+   "follow_poll_s": 7.0,
+   "hardcoded_key_check": false,
+   "lanes": 3,
+   "logs_dir": "<DIR>/l",
+   "max_limit_cycles": 9,
+   "max_quick_unknown": 5,
+   "max_sleep_hours": 48.0,
+   "max_transient": 2,
+   "max_turns": 40,
+   "min_free_mb": 100.0,
+   "min_version": "0.3.0",
+   "no_result_retries": 0,
+   "on_event": [
+    "notify-send",
+    "baton done"
+   ],
+   "on_event_sleep_min": 5.0,
+   "on_event_timeout_s": 3.0,
+   "preflight": {
+    "auth_callback": "http://127.0.0.1:8000/cb",
+    "auto": false,
+    "backend": "<DIR>/../api",
+    "cors_keys": [
+     "CORS"
+    ],
+    "env_files": [
+     ".env"
+    ],
+    "panel_origins": [
+     "http://127.0.0.1:3001"
+    ],
+    "redirect_keys": [],
+    "repos": [
+     "<DIR>/../api",
+     "<DIR>/../web"
+    ],
+    "services_tcp": [
+     "127.0.0.1:27017"
+    ]
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [
+      "<DIR>/../shared"
+     ],
+     "bin": "<DIR>/bin/claude",
+     "effort_flag": false,
+     "enabled": true,
+     "env": {
+      "A": "1",
+      "B": "two"
+     },
+     "extra_args": [
+      "--x"
+     ],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 2,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "plan",
+     "profile": null,
+     "required_env": [
+      "K1"
+     ],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": "<DIR>/claude-settings.json"
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "/root/bin/codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": "/root/.codex",
+     "known_models": [
+      "m1"
+     ],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": true,
+     "permission_mode": "acceptEdits",
+     "profile": "p",
+     "required_env": [],
+     "sandbox": null,
+     "sandbox_probe": [
+      "--probe"
+     ],
+     "settings": null
+    }
+   },
+   "quick_exit_s": 30.0,
+   "real_data_smoke": {
+    "db_env": {
+     "URL": "X"
+    }
+   },
+   "repos": {
+    "/tmp/api": {
+     "forbid_literals": [
+      "re:prod-db"
+     ],
+     "path": "/tmp/api",
+     "suite_baseline": "<DIR>/baseline.txt",
+     "suite_cmd": [
+      "pytest",
+      "-q"
+     ],
+     "suite_failure_regex": "re:FAILED (\\S+)",
+     "suite_timeout_min": 15.0
+    }
+   },
+   "required_env": [
+    "A_B",
+    "C"
+   ],
+   "reset_margin_s": 60,
+   "restore_branches": true,
+   "results_dir": "<DIR>/r",
+   "return_check_s": 30.0,
+   "return_mid_task": true,
+   "return_to_start_provider": false,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "medium",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "",
+       "model": "m1"
+      }
+     },
+     "r2": {
+      "claude": {
+       "effort": "",
+       "model": "opus"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1",
+     "review": "r2"
+    }
+   },
+   "services": {
+    "mongo": {
+     "check": "mongosh --eval 1",
+     "endpoint": "127.0.0.1:27017",
+     "name": "mongo",
+     "restart": [
+      "docker",
+      "start",
+      "mongo"
+     ],
+     "timeout_s": 12.0,
+     "wait_s": 2.0
+    }
+   },
+   "services_for_all_tasks": true,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 20.0,
+   "start_provider": "claude",
+   "state_dir": "<DIR>/s",
+   "task_timeout_min": 90.5,
+   "tasks_dir": "<DIR>/t",
+   "timezone": "zone:Europe/Berlin",
+   "transient_wait_s": 15.0,
+   "ui_paths": [
+    "web/**"
+   ],
+   "unknown_limit_cooldown_min": 12.0,
+   "verifier_providers": [
+    "claude",
+    "codex"
+   ],
+   "verifier_test_paths": [
+    "spec/**"
+   ],
+   "verifiers_dir": "<DIR>/v",
+   "verifiers_last": true,
+   "watch_repos": [
+    "<DIR>/../a",
+    "/abs/b"
+   ],
+   "wip_secret_patterns": [
+    "*.pem",
+    "id_*"
+   ],
+   "wip_warn_patterns": []
+  }
+ },
+ "config/minimal": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/no_providers": {
+  "error": "baton.toml: no [providers.*] section"
+ },
+ "config/no_rungs": {
+  "error": "baton.toml: no [routing.rungs] defined"
+ },
+ "config/on_event_list": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": [
+    "a",
+    "b"
+   ],
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/on_event_string": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": [
+    "ntfy",
+    "publish",
+    "my topic"
+   ],
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/only_unknown_provider_order": {
+  "error": "baton.toml: unknown provider 'gemini' (known: claude, codex)"
+ },
+ "config/plan_ui_paths_str": {
+  "error": "baton.toml: plan.ui_paths must be a list of strings"
+ },
+ "config/plan_unknown_key_ignored": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/preflight_auto_str": {
+  "error": "baton.toml: preflight.auto must be true or false (without quotes), not 'x'"
+ },
+ "config/preflight_cors_keys_bad": {
+  "error": "baton.toml: preflight.cors_keys must be a list of strings"
+ },
+ "config/preflight_defaults": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/preflight_env_files_bad": {
+  "error": "baton.toml: preflight.env_files must be a list of strings"
+ },
+ "config/preflight_error_before_smoke_error": {
+  "error": "baton.toml: preflight.repos must be a list of strings"
+ },
+ "config/preflight_not_table": {
+  "error": "baton.toml: [preflight] must be a table"
+ },
+ "config/preflight_panel_origins_str": {
+  "error": "baton.toml: preflight.panel_origins must be a list of strings"
+ },
+ "config/preflight_redirect_keys_bad": {
+  "error": "baton.toml: preflight.redirect_keys must be a list of strings"
+ },
+ "config/preflight_repos_str": {
+  "error": "baton.toml: preflight.repos must be a list of strings"
+ },
+ "config/preflight_services_tcp_bad": {
+  "error": "baton.toml: preflight.services_tcp: 'nohost' must look like host:port, e.g. 127.0.0.1:27017"
+ },
+ "config/preflight_services_tcp_port": {
+  "error": "baton.toml: preflight.services_tcp: 'h:99999' must look like host:port, e.g. 127.0.0.1:27017"
+ },
+ "config/preflight_unknown_keys": {
+  "error": "baton.toml: [preflight]: unknown keys: yy, zz"
+ },
+ "config/provider_add_dirs_str": {
+  "error": "baton.toml: providers.claude.add_dirs must be a list of strings"
+ },
+ "config/provider_bin_5": {
+  "error": "baton.toml: providers.claude.bin must be a string, not 5"
+ },
+ "config/provider_bin_absolute": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "/usr/bin/claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/provider_bin_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/provider_bin_relative_slash": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "<DIR>/tools/claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/provider_effort_flag_str": {
+  "error": "baton.toml: providers.claude.effort_flag must be true or false (without quotes), not 'x'"
+ },
+ "config/provider_enabled_str": {
+  "error": "baton.toml: providers.claude.enabled must be true or false (without quotes), not 'x'"
+ },
+ "config/provider_env_not_table": {
+  "error": "baton.toml: providers.claude.env must be a table"
+ },
+ "config/provider_error_before_run_error": {
+  "error": "baton.toml: providers.claude.enabled must be true or false (without quotes), not 'x'"
+ },
+ "config/provider_extra_args_str": {
+  "error": "baton.toml: providers.claude.extra_args must be a list of strings"
+ },
+ "config/provider_known_models_int": {
+  "error": "baton.toml: providers.codex.known_models must be a list of strings"
+ },
+ "config/provider_max_concurrent_0": {
+  "error": "baton.toml: providers.claude.max_concurrent must be a whole number of at least 1"
+ },
+ "config/provider_max_concurrent_bool": {
+  "error": "baton.toml: providers.claude.max_concurrent must be a whole number of at least 1"
+ },
+ "config/provider_network_on_claude": {
+  "error": "baton.toml: providers.claude.network only applies to codex (its sandbox blocks the network by default); Claude's access is set in its settings file"
+ },
+ "config/provider_network_str": {
+  "error": "baton.toml: providers.codex.network must be true or false (without quotes), not 'x'"
+ },
+ "config/provider_not_a_table": {
+  "error": "baton.toml: [providers.claude] must be a table"
+ },
+ "config/provider_permission_mode_5": {
+  "error": "baton.toml: providers.claude.permission_mode must be a string, not 5"
+ },
+ "config/provider_required_env_bad": {
+  "error": "baton.toml: providers.claude.required_env: 'a b' is not an environment variable name"
+ },
+ "config/provider_sandbox_none": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": null,
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/provider_sandbox_probe_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": [],
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/provider_sandbox_probe_str": {
+  "error": "baton.toml: providers.codex.sandbox_probe must be a list of strings"
+ },
+ "config/provider_unknown_key": {
+  "error": "baton.toml: [providers.claude]: unknown key 'binn' (did you mean 'bin'?)"
+ },
+ "config/provider_unknown_keys_two": {
+  "error": "baton.toml: [providers.claude]: unknown keys 'yy', 'zz'"
+ },
+ "config/providers_not_a_table": {
+  "error": "baton.toml: [providers] must be a table of [providers.<name>] tables"
+ },
+ "config/real_data_smoke_not_table": {
+  "error": "baton.toml: [real_data_smoke] must be a table"
+ },
+ "config/repo_bad_regex": {
+  "error": "baton.toml: [repos.\"a\"] forbid_literals: bad regex '(': missing ), unterminated subpattern at position 0"
+ },
+ "config/repo_defaults": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {
+    "<DIR>/a": {
+     "forbid_literals": [],
+     "path": "<DIR>/a",
+     "suite_baseline": null,
+     "suite_cmd": null,
+     "suite_failure_regex": null,
+     "suite_timeout_min": 60.0
+    }
+   },
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/repo_entry_not_table": {
+  "error": "baton.toml: [repos.\"a\"] must be a table"
+ },
+ "config/repo_failure_regex_bad": {
+  "error": "baton.toml: [repos.\"a\"] suite_failure_regex: missing ), unterminated subpattern at position 0"
+ },
+ "config/repo_failure_regex_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {
+    "<DIR>/a": {
+     "forbid_literals": [],
+     "path": "<DIR>/a",
+     "suite_baseline": null,
+     "suite_cmd": null,
+     "suite_failure_regex": null,
+     "suite_timeout_min": 60.0
+    }
+   },
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/repo_failure_regex_no_group": {
+  "error": "baton.toml: [repos.\"a\"] suite_failure_regex needs one group: the failing test's name"
+ },
+ "config/repo_forbid_not_list": {
+  "error": "baton.toml: repos.\"a\".forbid_literals must be a list of strings"
+ },
+ "config/repo_suite_cmd_5": {
+  "error": "baton.toml: [repos.\"a\"] suite_cmd must be a command string or a list of arguments"
+ },
+ "config/repo_suite_cmd_empty": {
+  "error": "baton.toml: [repos.\"a\"] suite_cmd must be a command string or a list of arguments"
+ },
+ "config/repo_suite_cmd_list_bad": {
+  "error": "baton.toml: [repos.\"a\"] suite_cmd must be a command string or a list of arguments"
+ },
+ "config/repo_timeout_0": {
+  "error": "baton.toml: repos.\"a\".suite_timeout_min must be greater than 0, got 0"
+ },
+ "config/repo_unknown_keys": {
+  "error": "baton.toml: [repos.\"a\"]: unknown keys: yy, zz"
+ },
+ "config/repos_error_before_preflight_error": {
+  "error": "baton.toml: [repos.\"a\"] suite_cmd must be a command string or a list of arguments"
+ },
+ "config/repos_not_table": {
+  "error": "baton.toml: [repos] must be a table of [repos.\"<path>\"] tables"
+ },
+ "config/routing_not_table": {
+  "error": "baton.toml: [providers.claude]: unknown key 'routing'"
+ },
+ "config/routing_top_not_table": {
+  "error": "baton.toml: [routing] must be a table"
+ },
+ "config/run_bad_00_timezone_nowhere_city_": {
+  "error": "baton.toml: run.timezone: unknown timezone 'Nowhere/City' (use an IANA name such as Europe/Berlin, or leave it out to use this machine's zone)"
+ },
+ "config/run_bad_01_timezone_5": {
+  "error": "baton.toml: run.timezone: unknown timezone '5' (use an IANA name such as Europe/Berlin, or leave it out to use this machine's zone)"
+ },
+ "config/run_bad_02_task_timeout_min_abc_": {
+  "error": "baton.toml: run.task_timeout_min must be a number, got 'abc'"
+ },
+ "config/run_bad_03_task_timeout_min_0": {
+  "error": "baton.toml: run.task_timeout_min must be greater than 0, got 0"
+ },
+ "config/run_bad_04_task_timeout_min_true": {
+  "error": "baton.toml: run.task_timeout_min must be a number, got True"
+ },
+ "config/run_bad_05_max_turns_1": {
+  "error": "baton.toml: run.max_turns must be at least 0, got -1"
+ },
+ "config/run_bad_06_max_turns_1_5": {
+  "error": "baton.toml: run.max_turns must be a whole number, got 1.5"
+ },
+ "config/run_bad_07_reset_margin_seconds_x_": {
+  "error": "baton.toml: run.reset_margin_seconds must be a whole number, got 'x'"
+ },
+ "config/run_bad_08_reset_margin_seconds_1": {
+  "error": "baton.toml: run.reset_margin_seconds must be at least 0, got -1"
+ },
+ "config/run_bad_09_unknown_limit_cooldown_min_1": {
+  "error": "baton.toml: run.unknown_limit_cooldown_min must be at least 0, got -1"
+ },
+ "config/run_bad_10_max_sleep_hours_0": {
+  "error": "baton.toml: run.max_sleep_hours must be greater than 0, got 0"
+ },
+ "config/run_bad_11_quick_exit_seconds_1": {
+  "error": "baton.toml: run.quick_exit_seconds must be at least 0, got -1"
+ },
+ "config/run_bad_12_max_quick_unknown_0": {
+  "error": "baton.toml: run.max_quick_unknown must be at least 1, got 0"
+ },
+ "config/run_bad_13_transient_wait_seconds_5": {
+  "error": "baton.toml: run.transient_wait_seconds must be at least 0, got -5"
+ },
+ "config/run_bad_14_max_transient_retries_1": {
+  "error": "baton.toml: run.max_transient_retries must be at least 0, got -1"
+ },
+ "config/run_bad_15_no_result_retries_1": {
+  "error": "baton.toml: run.no_result_retries must be at least 0, got -1"
+ },
+ "config/run_bad_16_commit_leftovers_false_": {
+  "error": "baton.toml: run.commit_leftovers must be true or false (without quotes), not 'false'"
+ },
+ "config/run_bad_17_default_base_5": {
+  "error": "baton.toml: run.default_base must be a string, not 5"
+ },
+ "config/run_bad_18_watch_repos_x_": {
+  "error": "baton.toml: run.watch_repos must be a list of strings"
+ },
+ "config/run_bad_19_verifier_test_paths_x_": {
+  "error": "baton.toml: run.verifier_test_paths must be a list of strings"
+ },
+ "config/run_bad_20_verifier_providers_gpt_": {
+  "error": "baton.toml: run.verifier_providers: unknown provider 'gpt'"
+ },
+ "config/run_bad_21_verifier_providers_claude_": {
+  "error": "baton.toml: run.verifier_providers must be a list of strings"
+ },
+ "config/run_bad_22_hardcoded_key_check_no_": {
+  "error": "baton.toml: run.hardcoded_key_check must be true or false (without quotes), not 'no'"
+ },
+ "config/run_bad_23_return_to_start_provider_1": {
+  "error": "baton.toml: run.return_to_start_provider must be true or false (without quotes), not 1"
+ },
+ "config/run_bad_24_return_mid_task_yes_": {
+  "error": "baton.toml: run.return_mid_task must be true or false (without quotes), not 'yes'"
+ },
+ "config/run_bad_25_return_check_seconds_0": {
+  "error": "baton.toml: run.return_check_seconds must be greater than 0, got 0"
+ },
+ "config/run_bad_26_verifiers_last_x_": {
+  "error": "baton.toml: run.verifiers_last must be true or false (without quotes), not 'x'"
+ },
+ "config/run_bad_27_existing_branch_merge_": {
+  "error": "baton.toml: run.existing_branch must be \"warn\", \"rebase\" or \"fail\", not 'merge'"
+ },
+ "config/run_bad_28_existing_branch_5": {
+  "error": "baton.toml: run.existing_branch must be a string, not 5"
+ },
+ "config/run_bad_29_min_version_5": {
+  "error": "baton.toml: run.min_version must be a string, not 5"
+ },
+ "config/run_bad_30_required_env_1bad_": {
+  "error": "baton.toml: run.required_env: '1bad' is not an environment variable name"
+ },
+ "config/run_bad_31_required_env_a_": {
+  "error": "baton.toml: run.required_env must be a list of strings"
+ },
+ "config/run_bad_32_follow_poll_seconds_0": {
+  "error": "baton.toml: run.follow_poll_seconds must be greater than 0, got 0"
+ },
+ "config/run_bad_33_lanes_0": {
+  "error": "baton.toml: run.lanes must be a whole number of at least 1"
+ },
+ "config/run_bad_34_lanes_2_": {
+  "error": "baton.toml: run.lanes must be a whole number of at least 1"
+ },
+ "config/run_bad_35_lanes_true": {
+  "error": "baton.toml: run.lanes must be a whole number of at least 1"
+ },
+ "config/run_bad_36_wip_secret_patterns_x_": {
+  "error": "baton.toml: run.wip_secret_patterns must be a list of non-empty glob strings, not 'x'"
+ },
+ "config/run_bad_37_wip_secret_patterns_": {
+  "error": "baton.toml: run.wip_secret_patterns must be a list of non-empty glob strings, not ['']"
+ },
+ "config/run_bad_38_wip_warn_patterns_1_": {
+  "error": "baton.toml: run.wip_warn_patterns must be a list of non-empty glob strings, not [1]"
+ },
+ "config/run_bad_39_min_free_mb_1": {
+  "error": "baton.toml: run.min_free_mb must be at least 0, got -1"
+ },
+ "config/run_bad_40_stall_minutes_1": {
+  "error": "baton.toml: run.stall_minutes must be at least 0, got -1"
+ },
+ "config/run_bad_41_max_limit_cycles_0": {
+  "error": "baton.toml: run.max_limit_cycles must be at least 1, got 0"
+ },
+ "config/run_bad_42_env_limited_action_weird_": {
+  "error": "baton.toml: run.env_limited_action must be one of note, retry_other_provider, not 'weird'"
+ },
+ "config/run_bad_43_env_limited_action_5": {
+  "error": "baton.toml: run.env_limited_action must be a string, not 5"
+ },
+ "config/run_bad_44_services_for_all_tasks_x_": {
+  "error": "baton.toml: run.services_for_all_tasks must be true or false (without quotes), not 'x'"
+ },
+ "config/run_bad_45_on_event_5": {
+  "error": "baton.toml: run.on_event must be a command line or a list of arguments"
+ },
+ "config/run_bad_46_on_event_": {
+  "error": "baton.toml: run.on_event is empty"
+ },
+ "config/run_bad_47_on_event_a_b_": {
+  "error": "baton.toml: run.on_event: No closing quotation"
+ },
+ "config/run_bad_48_on_event_": {
+  "error": "baton.toml: run.on_event is empty"
+ },
+ "config/run_bad_49_on_event_1_": {
+  "error": "baton.toml: run.on_event must be a command line or a list of arguments"
+ },
+ "config/run_bad_50_on_event_sleep_min_1": {
+  "error": "baton.toml: run.on_event_sleep_min must be at least 0, got -1"
+ },
+ "config/run_bad_51_on_event_timeout_seconds_0": {
+  "error": "baton.toml: run.on_event_timeout_seconds must be greater than 0, got 0"
+ },
+ "config/run_bad_52_start_provider_gemini_": {
+  "error": "baton.toml: start_provider 'gemini' has no [providers.gemini] section"
+ },
+ "config/run_bad_53_start_provider_5": {
+  "error": "baton.toml: run.start_provider must be a string, not 5"
+ },
+ "config/run_bad_54_common_prompt_nope_md_": {
+  "error": "baton.toml: common_prompt not found: <DIR>/nope.md"
+ },
+ "config/run_bad_55_tasks_dirs_x_": {
+  "error": "baton.toml: [run]: unknown key 'tasks_dirs' (did you mean 'tasks_dir'?)"
+ },
+ "config/run_bad_56_taskz_dir_x_": {
+  "error": "baton.toml: [run]: unknown key 'taskz_dir' (did you mean 'tasks_dir'?)"
+ },
+ "config/run_error_before_routing_error": {
+  "error": "baton.toml: routing.rungs.r1.claude needs a model"
+ },
+ "config/run_error_before_services_error": {
+  "error": "baton.toml: run.on_event_timeout_seconds must be greater than 0, got 0"
+ },
+ "config/run_not_a_table": {
+  "error": "baton.toml: [run] must be a table"
+ },
+ "config/rung_not_table": {
+  "error": "baton.toml: routing.rungs.r1 must be a table with one sub-table per provider (e.g. [routing.rungs.r1.claude]), not 'x'"
+ },
+ "config/rung_spec_not_table": {
+  "error": "baton.toml: routing.rungs.r1.claude needs a model"
+ },
+ "config/rung_spec_without_model": {
+  "error": "baton.toml: routing.rungs.r1.claude needs a model"
+ },
+ "config/rung_unknown_provider": {
+  "error": "baton.toml: routing.rungs.r1: unknown provider 'gemini'"
+ },
+ "config/rungs_not_table": {
+  "error": "baton.toml: [routing.rungs] must be a table of [routing.rungs.<name>.<provider>] tables"
+ },
+ "config/service_bad_name": {
+  "error": "baton.toml: [services.-x]: the name may only contain letters, digits, '.', '_' and '-'"
+ },
+ "config/service_check_bad": {
+  "error": "baton.toml: services.m.check must be a command string or a list of arguments"
+ },
+ "config/service_check_empty_list": {
+  "error": "baton.toml: services.m.check must be a command string or a list of arguments"
+ },
+ "config/service_check_empty_str": {
+  "error": "baton.toml: services.m.check must be a command string or a list of arguments"
+ },
+ "config/service_endpoint_5": {
+  "error": "baton.toml: services.m.endpoint must be a string, not 5"
+ },
+ "config/service_no_check": {
+  "error": "baton.toml: [services.m] needs a `check` command (exit code 0 = healthy)"
+ },
+ "config/service_not_table": {
+  "error": "baton.toml: [services.mongo] must be a table"
+ },
+ "config/service_restart_bad": {
+  "error": "baton.toml: services.m.restart must be a command string or a list of arguments"
+ },
+ "config/service_timeout_0": {
+  "error": "baton.toml: services.m.timeout_s must be greater than 0, got 0"
+ },
+ "config/service_unknown_key": {
+  "error": "baton.toml: [services.m]: unknown key 'chek' (did you mean 'check'?)"
+ },
+ "config/service_wait_neg": {
+  "error": "baton.toml: services.m.wait_s must be at least 0, got -1"
+ },
+ "config/services_error_before_repos_error": {
+  "error": "baton.toml: services.x.check must be a command string or a list of arguments"
+ },
+ "config/services_not_table": {
+  "error": "baton.toml: [services] must be a table of [services.<name>] tables"
+ },
+ "config/start_provider_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/start_provider_missing_section": {
+  "error": "baton.toml: start_provider 'codex' has no [providers.codex] section"
+ },
+ "config/timezone_empty": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "config/top_level_unknown": {
+  "error": "baton.toml: top level: unknown key 'extra'"
+ },
+ "config/top_level_unknown_close": {
+  "error": "baton.toml: top level: unknown key 'runn' (did you mean 'run'?)"
+ },
+ "config/two_bad_run_keys_first_wins": {
+  "error": "baton.toml: run.task_timeout_min must be greater than 0, got 0"
+ },
+ "config/work_type_unknown_rung": {
+  "error": "baton.toml: work type 'feature' points to unknown rung 'r9'"
+ },
+ "config/work_types_not_table": {
+  "error": "baton.toml: [routing.work_types] must be a table"
+ },
+ "config/work_types_values_cast": {
+  "ok": {
+   "allow_codex_verifiers": false,
+   "base_dir": "<DIR>",
+   "browser_smoke": {},
+   "commit_leftovers": true,
+   "common_prompt": null,
+   "default_base": null,
+   "env_limited_action": "note",
+   "existing_branch": "fail",
+   "follow_poll_s": 15.0,
+   "hardcoded_key_check": true,
+   "lanes": 1,
+   "logs_dir": "<DIR>/logs",
+   "max_limit_cycles": 6,
+   "max_quick_unknown": 3,
+   "max_sleep_hours": 170.0,
+   "max_transient": 3,
+   "max_turns": 0,
+   "min_free_mb": 500.0,
+   "min_version": null,
+   "no_result_retries": 1,
+   "on_event": null,
+   "on_event_sleep_min": 30.0,
+   "on_event_timeout_s": 15.0,
+   "preflight": {
+    "auth_callback": null,
+    "auto": true,
+    "backend": null,
+    "cors_keys": [
+     "CORS_ORIGINS",
+     "CORS_ALLOW_ORIGINS",
+     "ALLOWED_ORIGINS",
+     "BACKEND_CORS_ORIGINS"
+    ],
+    "env_files": [
+     ".env",
+     ".env.local",
+     ".env.development",
+     ".env.development.local"
+    ],
+    "panel_origins": [],
+    "redirect_keys": [
+     "ALLOWED_REDIRECT_URLS",
+     "ALLOWED_REDIRECT_URIS",
+     "REDIRECT_ALLOW_LIST",
+     "AUTH_REDIRECT_ALLOW_LIST"
+    ],
+    "repos": [],
+    "services_tcp": []
+   },
+   "providers": {
+    "claude": {
+     "add_dirs": [],
+     "bin": "claude",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "claude",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    },
+    "codex": {
+     "add_dirs": [],
+     "bin": "codex",
+     "effort_flag": true,
+     "enabled": true,
+     "env": {},
+     "extra_args": [],
+     "home": null,
+     "known_models": [],
+     "max_concurrent": 1,
+     "name": "codex",
+     "network": false,
+     "permission_mode": "acceptEdits",
+     "profile": null,
+     "required_env": [],
+     "sandbox": "workspace-write",
+     "sandbox_probe": null,
+     "settings": null
+    }
+   },
+   "quick_exit_s": 120.0,
+   "real_data_smoke": {},
+   "repos": {},
+   "required_env": [],
+   "reset_margin_s": 180,
+   "restore_branches": true,
+   "results_dir": "<DIR>/results",
+   "return_check_s": 60.0,
+   "return_mid_task": false,
+   "return_to_start_provider": true,
+   "routing": {
+    "rungs": {
+     "r1": {
+      "claude": {
+       "effort": "",
+       "model": "sonnet"
+      },
+      "codex": {
+       "effort": "high",
+       "model": "m1"
+      }
+     }
+    },
+    "work_types": {
+     "feature": "r1",
+     "x": "r1"
+    }
+   },
+   "services": {},
+   "services_for_all_tasks": false,
+   "source": "<DIR>/baton.toml",
+   "stall_minutes": 0.0,
+   "start_provider": "codex",
+   "state_dir": "<DIR>/state",
+   "task_timeout_min": 240.0,
+   "tasks_dir": "<DIR>/tasks",
+   "timezone": null,
+   "transient_wait_s": 600.0,
+   "ui_paths": [
+    "src/app/**",
+    "*.tsx"
+   ],
+   "unknown_limit_cooldown_min": 30.0,
+   "verifier_providers": [
+    "claude"
+   ],
+   "verifier_test_paths": [
+    "tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/test_*.py"
+   ],
+   "verifiers_dir": "<DIR>/verifiers",
+   "verifiers_last": false,
+   "watch_repos": [],
+   "wip_secret_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.p12",
+    "*.pfx",
+    "*.keystore",
+    "id_rsa",
+    "id_rsa.*",
+    "id_ed25519",
+    "id_ed25519.*",
+    "id_ecdsa",
+    "id_ecdsa.*",
+    "id_dsa",
+    "id_dsa.*",
+    ".pypirc"
+   ],
+   "wip_warn_patterns": [
+    "*.key",
+    "credentials*",
+    "secrets.*",
+    ".npmrc",
+    "*.token",
+    "*.secret",
+    "service-account*.json",
+    ".netrc",
+    ".htpasswd"
+   ]
+  }
+ },
+ "task/approve_empty_body": {
+  "error": "T.md: the task body (prompt) is empty"
+ },
+ "task/approve_minimal": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Is it fine?",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "approve",
+   "lane": null,
+   "lane_key": "approval:T",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "approval:T",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/approve_with_repo": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "ok?",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [
+    "a"
+   ],
+   "feature": null,
+   "id": "T",
+   "kind": "approve",
+   "lane": null,
+   "lane_key": "approval:T",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "approval:T",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/bad_00_implement_repo_work_type_feature_zzz_1": {
+  "error": "T.md: unknown front-matter keys: zzz"
+ },
+ "task/bad_01_implement_repo_work_type_feature_zzz_1_yyy_2": {
+  "error": "T.md: unknown front-matter keys: yyy, zzz"
+ },
+ "task/bad_02_implement_repo_work_type_feature_kind_weird_": {
+  "error": "T.md: kind must be one of implement, verify, approve"
+ },
+ "task/bad_03_implement_repo_work_type_feature_kind_verify_": {
+  "error": "T.md: kind = \"verify\" files belong in the verifiers folder"
+ },
+ "task/bad_04_verify_repo_work_type_feature_kind_approve_": {
+  "error": "T.md: kind = \"approve\" files belong in the tasks folder"
+ },
+ "task/bad_05_verify_repo_work_type_feature_": {
+  "error": "T.md: files in the verifiers folder need kind = \"verify\""
+ },
+ "task/bad_06_verify_repo_work_type_feature_kind_implement_": {
+  "error": "T.md: files in the verifiers folder need kind = \"verify\""
+ },
+ "task/bad_07_implement_repo_work_type_feature_id_bad_": {
+  "error": "T.md: id '-bad' may only contain ASCII letters, digits, '.', '_' and '-', and must start with a letter or digit"
+ },
+ "task/bad_08_implement_repo_work_type_feature_id_caf_": {
+  "error": "T.md: id 'café' may only contain ASCII letters, digits, '.', '_' and '-', and must start with a letter or digit"
+ },
+ "task/bad_09_implement_repo_work_type_feature_id_5": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/5",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "5",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/bad_10_implement_repo_work_type_feature_template_repo_suite": {
+  "error": "T.md: template must be one of env-preflight, browser-smoke, real-data-smoke, repo-suite and belongs in a kind = \"verify\" file"
+ },
+ "task/bad_11_verify_kind_verify_template_nope_": {
+  "error": "T.md: template must be one of env-preflight, browser-smoke, real-data-smoke, repo-suite and belongs in a kind = \"verify\" file"
+ },
+ "task/bad_12_verify_kind_verify_repo_work_type_feature_when_la": {
+  "error": "T.md: when must be \"feature-end\" and belongs in a kind = \"verify\" file"
+ },
+ "task/bad_13_implement_repo_work_type_feature_when_feature_end_": {
+  "error": "T.md: when must be \"feature-end\" and belongs in a kind = \"verify\" file"
+ },
+ "task/bad_14_verify_kind_verify_repo_work_type_feature_when_fe": {
+  "error": "T.md: when = \"feature-end\" needs a feature (the group it runs at the end of)"
+ },
+ "task/bad_15_verify_kind_verify_repo_work_type_feature_when_fe": {
+  "error": "T.md: when = \"feature-end\" needs a feature (the group it runs at the end of)"
+ },
+ "task/bad_16_implement_repo_work_type_feature_money_gate_true": {
+  "error": "T.md: money_gate = true|false belongs in a kind = \"verify\" file"
+ },
+ "task/bad_17_verify_kind_verify_repo_work_type_feature_money_g": {
+  "error": "T.md: money_gate = true|false belongs in a kind = \"verify\" file"
+ },
+ "task/bad_18_implement_repo_work_type_feature_params_5": {
+  "error": "T.md: params must be a table"
+ },
+ "task/bad_19_implement_work_type_feature_": {
+  "error": "T.md: missing repo"
+ },
+ "task/bad_20_verify_kind_verify_work_type_feature_": {
+  "error": "T.md: missing repo"
+ },
+ "task/bad_21_implement_repo_work_type_feature_depends_on_5": {
+  "error": "T.md: depends_on must be a task id or a list of task ids, not 5"
+ },
+ "task/bad_22_implement_repo_work_type_feature_depends_on_1_": {
+  "error": "T.md: depends_on must be a task id or a list of task ids, not [1]"
+ },
+ "task/bad_23_implement_repo_work_type_feature_branch_5": {
+  "error": "T.md: branch must be a string, not 5"
+ },
+ "task/bad_24_implement_repo_work_type_feature_base_a_": {
+  "error": "T.md: base must be a string, not ['a']"
+ },
+ "task/bad_25_implement_repo_work_type_5": {
+  "error": "T.md: work_type must be a string, not 5"
+ },
+ "task/bad_26_implement_repo_work_type_feature_rung_5": {
+  "error": "T.md: rung must be a string, not 5"
+ },
+ "task/bad_27_implement_repo_work_type_feature_feature_5": {
+  "error": "T.md: feature must be a string, not 5"
+ },
+ "task/bad_28_implement_repo_work_type_feature_required_env_a_b_": {
+  "error": "T.md: required_env: 'a b' is not an environment variable name"
+ },
+ "task/bad_29_implement_repo_work_type_feature_required_env_a_": {
+  "error": "T.md: required_env must be a list of strings"
+ },
+ "task/bad_30_implement_repo_work_type_feature_paths_x_": {
+  "error": "T.md: paths must be a list of strings"
+ },
+ "task/bad_31_implement_repo_work_type_feature_paths_1_": {
+  "error": "T.md: paths must be a list of strings"
+ },
+ "task/bad_32_implement_repo_work_type_feature_providers_": {
+  "error": "T.md: providers must be a non-empty list of claude, codex"
+ },
+ "task/bad_33_implement_repo_work_type_feature_providers_gemini_": {
+  "error": "T.md: providers must be a non-empty list of claude, codex"
+ },
+ "task/bad_34_implement_repo_work_type_feature_providers_claude_": {
+  "error": "T.md: providers must be a non-empty list of claude, codex"
+ },
+ "task/bad_35_implement_repo_work_type_feature_lane_x_": {
+  "error": "T.md: lane '-x' may only contain ASCII letters, digits, '.', '_' and '-', and must start with a letter or digit"
+ },
+ "task/bad_36_implement_repo_work_type_feature_lane_5": {
+  "error": "T.md: lane '5' may only contain ASCII letters, digits, '.', '_' and '-', and must start with a letter or digit"
+ },
+ "task/bad_37_implement_repo_work_type_feature_needs_5": {
+  "error": "T.md: needs must be a service name or a list of service names, not 5"
+ },
+ "task/bad_38_implement_repo_work_type_feature_needs_redis_": {
+  "error": "T.md: needs 'redis', which is not a [services.*] entry in baton.toml (mongo)"
+ },
+ "task/bad_39_implement_repo_work_type_feature_needs_1_": {
+  "error": "T.md: needs must be a service name or a list of service names, not [1]"
+ },
+ "task/bad_40_implement_repo_work_type_feature_return_mid_task_no_": {
+  "error": "T.md: return_mid_task must be true or false (without quotes), not 'no'"
+ },
+ "task/bad_41_implement_repo_work_type_feature_priority_high_": {
+  "error": "T.md: priority must be a whole number, got 'high'"
+ },
+ "task/bad_42_implement_repo_work_type_feature_priority_1_5": {
+  "error": "T.md: priority must be a whole number, got 1.5"
+ },
+ "task/bad_43_implement_repo_work_type_feature_priority_2000000": {
+  "error": "T.md: priority must be at least -1e+06, got -2000000"
+ },
+ "task/bad_44_implement_repo_work_type_feature_timeout_min_0": {
+  "error": "T.md: timeout_min must be greater than 0, got 0"
+ },
+ "task/bad_45_implement_repo_work_type_feature_timeout_min_9_": {
+  "error": "T.md: timeout_min must be a number, got '9'"
+ },
+ "task/bad_46_implement_repo_work_type_feature_max_turns_1": {
+  "error": "T.md: max_turns must be at least 0, got -1"
+ },
+ "task/bad_47_implement_repo_work_type_feature_max_turns_1_5": {
+  "error": "T.md: max_turns must be a whole number, got 1.5"
+ },
+ "task/bad_48_implement_repo_work_type_feature_stall_minutes_1": {
+  "error": "T.md: stall_minutes must be at least 0, got -1"
+ },
+ "task/bad_49_implement_repo_": {
+  "error": "T.md: task has neither work_type nor rung"
+ },
+ "task/bad_50_implement_repo_work_type_nope_": {
+  "error": "T.md: unknown work_type 'nope'"
+ },
+ "task/bad_51_implement_repo_rung_r9_": {
+  "error": "T.md: unknown rung 'r9'"
+ },
+ "task/bad_52_implement_repo_work_type_feature_branch_x_lane_ok_ne": {
+  "error": "T.md: priority must be a whole number, got True"
+ },
+ "task/bad_53_implement_priority_high_zzz_1": {
+  "error": "T.md: unknown front-matter keys: zzz"
+ },
+ "task/bad_54_implement_repo_work_type_feature_depends_on_5_branch": {
+  "error": "T.md: params must be a table"
+ },
+ "task/bad_toml_front_matter": {
+  "error": "T.md: front matter: Invalid value (at line 1, column 8)"
+ },
+ "task/bom_front_matter": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/crlf_front_matter": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_absolute_repo": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "/tmp/abs-repo",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "/tmp/abs-repo",
+   "repo_key": "/tmp/abs-repo",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_depends_on_str": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [
+    "a"
+   ],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_empty_base_string": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_empty_body": {
+  "error": "T.md: the task body (prompt) is empty"
+ },
+ "task/implement_empty_branch_string": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_float_priority_int_ok": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": -1000000,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_full": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "main",
+   "base_explicit": true,
+   "body": "Body with <DIR> and text.",
+   "branch": "feat/x",
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [
+    "a",
+    "b"
+   ],
+   "feature": "f",
+   "id": "T-1.a",
+   "kind": "implement",
+   "lane": "db-1",
+   "lane_key": "lane:db-1",
+   "max_turns": 30,
+   "money_gate": false,
+   "needs": [
+    "mongo"
+   ],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [
+    "src/**"
+   ],
+   "priority": 7,
+   "providers": [
+    "codex",
+    "claude"
+   ],
+   "repo": "<DIR>/sub<DIR>",
+   "repo_key": "<DIR>/sub<DIR>",
+   "required_env": [
+    "A",
+    "B"
+   ],
+   "resolved_rung": "r1",
+   "return_mid_task": false,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": 0,
+   "template": null,
+   "timeout_min": 12.5,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_home_repo": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "/root/proj",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "/root/proj",
+   "repo_key": "/root/proj",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_minimal": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_money_gate_false": {
+  "error": "T.md: money_gate = true|false belongs in a kind = \"verify\" file"
+ },
+ "task/implement_needs_str": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [
+    "mongo"
+   ],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_no_branch_auto": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_return_mid_task_true": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": true,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_rung_only": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/implement_timeout_float": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": 1,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/implement_work_type_and_rung": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "baton/T",
+   "branch_auto": true,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "implement",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/no_front_matter": {
+  "error": "T.md: must start with a +++ front-matter block"
+ },
+ "task/unclosed_front_matter": {
+  "error": "T.md: front matter has no closing +++ line"
+ },
+ "task/verify_explicit_providers": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "verify/T",
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": [
+    "codex"
+   ],
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/verify_feature_end": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "verify/T",
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": "f",
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": true,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": [
+    "claude"
+   ],
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": "feature-end",
+   "work_type": null
+  }
+ },
+ "task/verify_minimal": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "verify/T",
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": [
+    "claude"
+   ],
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": "feature"
+  }
+ },
+ "task/verify_providers_default": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "Do the thing.",
+   "branch": "verify/T",
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": [
+    "claude"
+   ],
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "r1",
+   "return_mid_task": null,
+   "review": false,
+   "rung": "r1",
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": null,
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/verify_template": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": "repo-suite",
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/verify_template_money_gate": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": true,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": "real-data-smoke",
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/verify_template_no_repo": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {},
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": "browser-smoke",
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ },
+ "task/verify_template_params": {
+  "ok": {
+   "after": [],
+   "auto": false,
+   "base": "develop",
+   "base_explicit": false,
+   "body": "",
+   "branch": null,
+   "branch_auto": false,
+   "creates_base": false,
+   "depends_on": [],
+   "feature": null,
+   "id": "T",
+   "kind": "verify",
+   "lane": null,
+   "lane_key": "<DIR>",
+   "max_turns": null,
+   "money_gate": false,
+   "needs": [],
+   "params": {
+    "sub": {
+     "y": "z"
+    },
+    "x": 1
+   },
+   "path": "<DIR>/T.md",
+   "paths": [],
+   "priority": 0,
+   "providers": null,
+   "repo": "<DIR>",
+   "repo_key": "<DIR>",
+   "required_env": [],
+   "resolved_rung": "",
+   "return_mid_task": null,
+   "review": false,
+   "rung": null,
+   "sandbox": null,
+   "settings": null,
+   "stall_minutes": null,
+   "template": "env-preflight",
+   "timeout_min": null,
+   "warnings": [],
+   "when": null,
+   "work_type": null
+  }
+ }
+}

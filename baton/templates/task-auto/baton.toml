@@ -1,0 +1,129 @@
+# baton config — an example with a two-tool routing table.
+# Paths are relative to this file's folder.
+
+[run]
+start_provider = "codex"         # begin here (default: codex); stay on a provider until it hits its limit
+common_prompt = "common.md"      # prepended to every task prompt (optional)
+# timezone = "Europe/Berlin"     # leave out to use this machine's zone (the right choice almost always).
+                                 # Codex prints reset times without a zone; they are read in this zone,
+                                 # so setting it to anything but your machine's zone misreads them by hours
+default_base = "develop"         # branch new task branches are created from
+task_timeout_min = 240           # hard wall-clock cap per attempt (Codex has no turn cap)
+max_turns = 0                    # Claude --max-turns per attempt; 0 = off (tasks can set their own)
+reset_margin_seconds = 180       # wait this long past the printed reset time
+unknown_limit_cooldown_min = 30  # a limit with no readable reset time
+max_sleep_hours = 170            # stop instead of sleeping longer than this (weekly limits fit)
+# lanes = 1                       # tasks at once, in different repositories (experimental above 1; see README)
+quick_exit_seconds = 120         # an exit faster than this with no known reason ...
+max_quick_unknown = 3            # ... this many times in a row stops the run (emergency brake)
+transient_wait_seconds = 600     # overloaded / 429: wait, then retry the same provider
+max_transient_retries = 3
+no_result_retries = 1            # an attempt that ran long but wrote no result: retry this often
+commit_leftovers = true          # commit unfinished work as "chore(<task>): wip, ... (unverified)", never stash
+# verifiers_dir = "verifiers"     # hidden verification tasks (kind = "verify")
+# verifier_test_paths = ["tests/**", "**/__tests__/**", "**/*.test.*", "**/test_*.py"]
+# verifier_providers = ["claude"] # a verifier never falls back outside this list
+# return_mid_task = false         # EXPERIMENTAL, off by default: when start_provider resets (known reset
+                                  # time), stop the attempt on the other provider and hand the task back
+                                  # (WIP commit + notes). Try it on a low-risk night first.
+# return_check_seconds = 60       # how often a running attempt checks for that reset
+# verifiers_last = false          # true: verifiers gate nothing and run after every other task
+# env_limited_action = "note"     # "retry_other_provider": a partial/blocked caused by a sandbox limit is retried once elsewhere
+# on_event = "ntfy publish my-baton"   # run on task end, long sleeps, run end/stop/death; facts in BATON_* variables
+# on_event_sleep_min = 30
+# services_for_all_tasks = false  # true: check every [services.*] before every task
+# required_env = ["MY_TEST_DB_URI"]   # every agent task needs these set (shell or [providers.*.env]); plan fails, no attempt is spent
+# watch_repos = ["../shared-lib"]  # warn if a task leaves changes in these
+# wip_secret_patterns = [".env", ".env.*", "*.pem", "id_rsa*"]   # never committed in a WIP commit (this is a shortened default)
+# wip_warn_patterns = ["*.key", "credentials*", "secrets.*"]    # committed, but reported in the log, note and SUMMARY
+# restore_branches = true         # false: leave repositories on the last task branch when the run ends
+# allow_codex_verifiers = false   # true: accept codex as a verifier provider (it can see implementer output)
+# hardcoded_key_check = true      # flag new string literals that look like data keys, once per task
+
+# [repos."../api"]                  # per-repository rules
+# forbid_literals = ["prod-db\\.internal"]   # regexes no added line may match (tests excluded)
+# suite_cmd = "pytest -q -rf"       # repo-suite: the full suite, once after the last task of a feature
+# suite_baseline = "baselines/api.txt"   # known failing tests, one per line; only new failures are reported
+
+# [plan]
+# ui_paths = ["src/app/**", "*.tsx"]   # tasks touching these should carry "## User journey" or "## Reuse"
+
+# --- built-in verifier templates (see "Built-in checks" in the README) -----
+# [preflight]                       # env-preflight; also scheduled after each `feature`
+# repos = ["../api", "../panel"]    # each is checked against its .env.example (key names only)
+# backend = "../api"                # its env files hold the CORS and redirect lists
+# panel_origins = ["http://127.0.0.1:3000"]
+# auth_callback = "http://127.0.0.1:8000/auth/callback"
+# auto = true
+#
+# [browser_smoke]                   # browser-smoke (Node + Playwright)
+# deferred = "Playwright not approved yet"   # browser-smoke is off on purpose: one plan line, listed as not verified
+# node_dir = "../panel"             # where `playwright` resolves
+# storage_state = "qa/test-user.json"   # a TEST account's session
+# api_origins = ["http://127.0.0.1:8000"]
+# spinner_selector = "[aria-busy=true]"
+# servers = [{ name = "panel", cwd = "../panel", cmd = "npm run dev", url = "http://127.0.0.1:3000" }]
+#
+# [real_data_smoke]                 # real-data-smoke
+# smoke_db_url = "mongodb://localhost:27017/app_smoke"   # a COPY of the dev database
+# db_env = "MONGO_URL"              # or a table: { MONGO_HOST = "{host}", MONGO_DB = "{db}" }
+# server = { name = "api", cwd = "../api", cmd = "uvicorn app.main:app --port 8000", url = "http://127.0.0.1:8000/docs" }
+
+[providers.claude]
+bin = "claude"
+settings = "claude-settings.json"   # allow/deny rules; see claude-settings.example.json
+permission_mode = "acceptEdits"
+# add_dirs = ["../shared-lib"]     # extra folders the agent may read (passed as --add-dir).
+                                    # results/ is added automatically: the agent writes results/<id>.md there
+# effort_flag = false               # set if your Claude Code has no --effort flag
+
+[providers.codex]
+bin = "codex"                       # or a wrapper script, e.g. one that runs Codex in a container
+sandbox = "workspace-write"         # set to "" if the wrapper provides its own sandbox
+# profile = "baton"                 # a [profiles.baton] block in ~/.codex/config.toml
+# enabled = false                   # Claude only
+# known_models = ["gpt-6.1-sol"]    # model ids `baton plan` accepts; default: Codex's own models_cache.json
+
+# ---------------------------------------------------------------- routing
+# A rung is one step of the ladder, with the equivalent model on each tool.
+# When a task moves to the other tool mid-way it keeps its rung: same row,
+# never a lower one. CHECK the Codex model ids against your Codex install.
+# Cost: most of what you pay is context read again at every step, so a heavy model
+# burns the quota fast for little gain on routine work. Make r4 (sonnet high /
+# gpt-6.1-sol high) the workhorse and keep r5 (opus high) for verifiers and the
+# hardest work. `baton plan` warns about xhigh efforts and the heaviest Codex models.
+
+[routing.rungs.r1]
+claude = { model = "haiku" }
+codex = { model = "gpt-6-luna" }
+
+[routing.rungs.r2]
+claude = { model = "sonnet", effort = "low" }
+codex = { model = "gpt-6.1-sol", effort = "low" }
+
+[routing.rungs.r3]
+claude = { model = "sonnet", effort = "medium" }
+codex = { model = "gpt-6.1-sol", effort = "medium" }
+
+[routing.rungs.r4]
+claude = { model = "sonnet", effort = "high" }
+codex = { model = "gpt-6.1-sol", effort = "high" }
+
+[routing.rungs.r5]                 # verifiers and the hardest work only
+claude = { model = "opus", effort = "high" }
+codex = { model = "gpt-6.1-sol", effort = "high" }
+
+# A task file names its work type; baton looks up the rung here.
+# These names are only examples: use whatever fits your own work.
+[routing.work_types]
+lookup = "r1"            # symbol lookup, config check, rename, dead-code removal
+investigate = "r1"       # read-only: find usages, map a flow, summarise
+docs = "r1"              # docs, comments, copy and fixture edits (no logic change)
+small-fix = "r2"         # a contained bug fix with a failing test to start from
+crud = "r3"              # CRUD endpoints, repositories, simple screens
+migration = "r3"         # schema or index migration with a decided design
+refactor = "r4"          # a refactor across several modules
+security = "r5"          # authentication, secrets, permission checks
+concurrency = "r5"       # idempotency, races, locking
+critical = "r5"          # logic where a mistake is expensive (billing, data loss)
+review = "r5"            # an independent check of another task's work

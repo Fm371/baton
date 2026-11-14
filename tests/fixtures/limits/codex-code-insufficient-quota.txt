@@ -1,0 +1,3 @@
+{"type": "thread.started", "thread_id": "t1"}
+{"type": "error", "message": "Request rejected", "codex_error_info": "insufficient_quota"}
+{"type": "turn.failed", "error": {"message": "Request rejected"}}

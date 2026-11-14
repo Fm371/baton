@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read", "Glob", "Grep", "Edit",
+      "Write", "Bash(ls:*)", "Bash(head:*)", "Bash(tail:*)",
+      "Bash(wc:*)", "Bash(grep:*)", "Bash(rg:*)", "Bash(sort:*)",
+      "Bash(diff:*)", "Bash(mkdir:*)", "Bash(git status:*)", "Bash(git diff:*)",
+      "Bash(git log:*)", "Bash(git show:*)", "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git rev-parse:*)", "Bash(git branch --show-current)", "Bash(git ls-files:*)", "Bash(git grep:*)",
+      "Bash(pytest:*)", "Bash(poetry run pytest:*)", "Bash(npm test:*)", "Bash(npm run test:*)",
+      "Bash(pnpm test:*)", "Bash(yarn test:*)", "Bash(ruff check:*)", "Bash(mypy:*)",
+      "Bash(npm run lint:*)", "Bash(npm run typecheck:*)", "Bash(pnpm lint:*)", "Bash(pnpm typecheck:*)",
+      "Bash(yarn lint:*)", "Bash(yarn typecheck:*)", "Bash(go test:*)", "Bash(cargo test:*)",
+      "Bash(make test:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)", "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git reset:*)",
+      "Bash(git rebase:*)", "Bash(git merge:*)", "Bash(git stash:*)", "Bash(git clean:*)",
+      "Bash(git restore:*)", "Bash(git config:*)", "Bash(git remote:*)", "Bash(git -C:*)",
+      "Bash(git --git-dir:*)", "Bash(git branch -d:*)", "Bash(git branch -D:*)", "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)", "Bash(rm -r:*)", "Bash(rm -R:*)", "Bash(sudo:*)",
+      "Bash(su:*)", "Bash(curl:*)", "Bash(wget:*)", "Bash(ssh:*)",
+      "Bash(scp:*)", "Bash(nc:*)", "Bash(docker:*)", "Bash(chmod:*)",
+      "Bash(chown:*)", "Bash(cat:*)", "Bash(find:*)", "Bash(python3:*)",
+      "Bash(python:*)", "Bash(node:*)", "Bash(npx:*)", "Bash(bash:*)",
+      "Bash(sh:*)", "Bash(env:*)", "Bash(xargs:*)", "Bash(eval:*)",
+      "Read(**/.env)", "Read(**/.env.local)", "Read(**/.env.*.local)", "Read(**/.env.production)",
+      "Read(**/.env.development)", "Read(**/.env.staging)", "Read(**/.env.test)", "Read(**/*.pem)",
+      "Read(**/*.key)", "Read(**/id_rsa*)", "Read(~/.ssh/**)", "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)", "Read(~/.npmrc)", "Edit(**/.env)", "Edit(**/.env.local)",
+      "Edit(**/.env.*.local)", "Edit(**/.env.production)", "Edit(**/.env.development)", "Edit(**/.env.staging)",
+      "Edit(**/.env.test)", "Edit(**/*.pem)", "Edit(**/*.key)", "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)", "Edit(~/.bashrc)", "Edit(~/.zshrc)", "Edit(~/.gitconfig)",
+      "Edit(**/.github/workflows/**)"
+    ]
+  }
+}

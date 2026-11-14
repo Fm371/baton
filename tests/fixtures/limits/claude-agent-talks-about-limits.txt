@@ -1,0 +1,2 @@
+{"type": "assistant", "message": {"content": [{"type": "text", "text": "I added a usage limit reached check; you've hit your limit message"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "result": "done"}

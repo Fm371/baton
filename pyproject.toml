@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=77"]      # 77 reads the SPDX `license` expression and `license-files`
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "baton-runner"
+version = "0.4.0"
+description = "Run a folder of coding-agent tasks unattended, handing the work between Claude Code and Codex when one hits its usage limit."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["claude-code", "codex", "coding-agent", "automation", "unattended", "task-runner", "llm"]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development",
+  "Topic :: Software Development :: Version Control :: Git",
+  "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/Fm371/baton"
+Repository = "https://github.com/Fm371/baton"
+Issues = "https://github.com/Fm371/baton/issues"
+Changelog = "https://github.com/Fm371/baton/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["ruff", "build", "twine"]
+
+[project.scripts]
+baton = "baton.cli:main"
+
+[tool.setuptools]
+packages = ["baton", "baton.checks", "baton.templates"]   # baton.templates only holds data (no .py)
+
+[tool.setuptools.package-data]
+"baton.checks" = ["*.js"]
+# the workspace that `baton init` writes
+baton = ["templates/task-auto/*", "templates/task-auto/tasks/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# real mistakes only (unused/undefined names, syntax-level slips); style is not enforced
+select = ["F", "E9", "B"]
+ignore = ["B008"]

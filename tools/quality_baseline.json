@@ -1,0 +1,6 @@
+{
+  "_comment": "Functions allowed to stay over the budget at these values; see tools/quality_budget.py. Only ever lower them.",
+  "max_cc": 15,
+  "max_lines": 80,
+  "functions": {}
+}

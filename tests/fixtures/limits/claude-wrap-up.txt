@@ -1,0 +1,2 @@
+{"type": "rate_limit_event", "rate_limit_info": {"status": "allowed_warning", "resetsAt": 1792837800}}
+{"type": "result", "subtype": "success", "is_error": false, "result": "Approaching your 5-hour usage limit — Claude will wrap up the current step"}

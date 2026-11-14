@@ -1,0 +1,1 @@
+{"type": "error", "message": "You've hit your usage limit. Try again in 2 hours 5 minutes."}

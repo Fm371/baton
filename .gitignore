@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+# a working copy of examples/task-auto keeps its run data here
+results/
+state/
+logs/
+claude-settings.json
+.claude/

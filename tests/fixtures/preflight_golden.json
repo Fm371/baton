@@ -1,0 +1,294 @@
+{
+ "all_disabled": {
+  "errors": [
+   "every provider is disabled",
+   "start_provider 'claude' is disabled"
+  ],
+  "plan": "providers: claude (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: \n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "baton_folder_inside_repo": {
+  "errors": [
+   "<ROOT>/repo/task-auto-results is inside repo and git does not ignore it: results, state and logs would count as uncommitted changes and block the next run. Add `task-auto-results/` to .gitignore or .git/info/exclude, or move the task-auto folder out of the repository"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "branch_variants": {
+  "errors": [
+   "task a: base nope does not exist in repo; baton never fetches. Fetch and create it yourself (`git -C <ROOT>/repo fetch`, then `git -C <ROOT>/repo branch nope origin/nope`), or set `base`/[run] default_base to a branch that exists",
+   "task b: 'bad..name' is not a valid branch name: fatal: 'bad..name' is not a valid branch name"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/new from nope)  rung r3: claude: sonnet medium, codex: sol medium\n 2. b  [pending]  repo repo (bad..name from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 3. c  [pending]  repo repo (main from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 4. d  [pending]  repo repo (develop from develop)  rung r3: claude: sonnet medium, codex: sol medium  [branch exists: 0 commits over develop]\n 5. e  [pending]  repo repo (baton/e [automatic] from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b",
+   "c",
+   "d",
+   "e"
+  ],
+  "warnings": [
+   "task c: its branch 'main' is a main line (main/master): the task commits straight onto it. Use a branch of its own (leave `branch` out for baton/<id>)",
+   "task d: its branch 'develop' is a main line (the default base): the task commits straight onto it. Use a branch of its own (leave `branch` out for baton/<id>)"
+  ]
+ },
+ "clean_basic": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "codex_disabled_start_codex": {
+  "errors": [
+   "start_provider 'codex' is disabled"
+  ],
+  "plan": "providers: codex > claude (begins on: codex)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "create_dirs": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "dirty_repo": {
+  "errors": [
+   "repo has uncommitted changes; commit them first:\n      ?? scratch.txt"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "existing_branch_with_history": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/old from develop)  rung r3: claude: sonnet medium, codex: sol medium  [branch exists: 1 commit over develop]\n 2. b  [pending]  repo repo (feat/b from feat/old)  rung r3: claude: sonnet medium, codex: sol medium  [branch exists: 1 commit over feat/old, 1 behind it; MISSING feat/old]  after a\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b"
+  ],
+  "warnings": [
+   "task b: feat/b does not contain feat/old (1 commit of it missing), so the task would not see the work it depends on (the run will refuse this task; rebase it yourself (`git rebase <dependency branch>` while on it), delete the old branch, or set [run] existing_branch = \"rebase\" to let baton rebase it)"
+  ]
+ },
+ "lanes": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\nlanes: up to 2 tasks at once, one per repository (or `lane`); slots claude x1, codex x1 (experimental)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium  lane repo\n 2. v  [verify]  [pending]  repo repo (verify/v from feat/x)  rung r3: claude: sonnet medium  lane repo  after a\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "v"
+  ],
+  "warnings": [
+   "lanes = 2, but the agent tasks share 1 lane: tasks in one repository never run at the same time, so nothing runs in parallel",
+   "lanes: a Codex task in another lane can read a verifier's uncommitted test files in its repository while the verifier runs; keep verifier_providers = [\"claude\"] and set providers = [\"claude\"] on tasks you do not want to overlap with verifiers"
+  ]
+ },
+ "lanes_two_repos": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\nlanes: up to 2 tasks at once, one per repository (or `lane`); slots claude x1, codex x1 (experimental)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium  lane repo\n 2. b  [pending]  repo repo2 (feat/y from develop)  rung r3: codex: sol medium  lane repo2\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop, repo2 -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b"
+  ],
+  "warnings": []
+ },
+ "missing_binary": {
+  "errors": [
+   "codex: '/nonexistent/codex' not found or not executable (install it, fix providers.codex.bin, or set enabled = false)"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "money_gates_and_suite": {
+  "errors": [
+   "s: no suite_cmd for repo; set [repos.\"...\"] suite_cmd or params.cmd",
+   "s: baseline file <ROOT>/task-auto/missing-baseline.txt not found (an empty file means no known failures)"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 2. g1  [verify]  [pending]  repo repo (verify/g1 from feat/x)  rung r3: claude: sonnet medium  after a\n 3. g2  [verify]  [pending]  repo repo (verify/g2 from feat/x)  rung r3: claude: sonnet medium  after a\n 4. s  [verify: repo-suite]  [pending]  runs in baton, no agent  after a\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "g1",
+   "g2",
+   "s"
+  ],
+  "warnings": [
+   "feature f1 has 2 money gates (g1, g2); each one holds back its dependents. Keep one and give it `when = \"feature-end\"` so it runs once after the feature's tasks"
+  ]
+ },
+ "no_tasks": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n",
+  "tasks": [],
+  "warnings": [
+   "no task files in <ROOT>/task-auto/tasks"
+  ]
+ },
+ "not_a_repo_and_bare": {
+  "errors": [
+   "task a: <ROOT>/plain is not a git repository (the repo path in the task file is relative to baton.toml's folder)",
+   "task b: <ROOT>/bare.git is a bare repository; baton needs a working copy (a clone with files checked out), because the agent edits files there",
+   "task c: <ROOT>/missing-dir is not a git repository (the repo path in the task file is relative to baton.toml's folder)"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo plain (baton/a [automatic] from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 2. b  [pending]  repo bare.git (baton/b [automatic] from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 3. c  [pending]  repo missing-dir (baton/c [automatic] from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nfirst command (cwd <ROOT>/plain, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b",
+   "c"
+  ],
+  "warnings": []
+ },
+ "plan_kinds": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\nverifiers run last (verifiers_last): a verifier nobody depends on runs after every other task; a task that lists a verifier in depends_on still waits for it\nlanes: up to 3 tasks at once, one per repository (or `lane`); slots claude x1, codex x1 (experimental)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium  lane repo  return: off\n 2. ap  [approve]  [pending]  human checkpoint  after a\n 3. t  [verify: env-preflight]  [pending]  runs in baton, no agent  after a\n 4. v  [verify]  [pending]  repo repo (verify/v from feat/x)  rung r3: claude: sonnet medium  lane repo  after a\n 5. w  [verify, at the end of f2]  [pending]  repo repo (verify/w from feat/x)  rung r3: claude: sonnet medium  lane repo  after a\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "ap",
+   "t",
+   "v",
+   "w"
+  ],
+  "warnings": [
+   "lanes = 3, but the agent tasks share 1 lane: tasks in one repository never run at the same time, so nothing runs in parallel",
+   "lanes: a Codex task in another lane can read a verifier's uncommitted test files in its repository while the verifier runs; keep verifier_providers = [\"claude\"] and set providers = [\"claude\"] on tasks you do not want to overlap with verifiers"
+  ]
+ },
+ "provider_not_enabled": {
+  "errors": [
+   "--provider codex: that provider is not enabled"
+  ],
+  "plan": "providers: codex > claude (begins on: codex)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "provider_override": {
+  "errors": [],
+  "plan": "providers: codex > claude (begins on: codex)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/codex exec --json --sandbox workspace-write --model sol -c model_reasoning_effort=medium -",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "required_env_and_paths": {
+  "errors": [
+   "task a needs environment variable(s) BATON_GOLDEN_NOT_SET_VAR, which are not set in the shell that runs baton (or under [providers.<name>.env]); without them its tests would be skipped and the result would prove nothing. Export them and start baton again"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "rung_without_model": {
+  "errors": [
+   "task a: rung 'r4' has no model for codex",
+   "task b: rung 'r4' has no model for codex"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r4: claude: sonnet high\n 2. b  [pending]  repo repo (feat/x from develop)  rung r4: \n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort high --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b"
+  ],
+  "warnings": []
+ },
+ "services_down": {
+  "errors": [
+   "service 'db' is down (exit 1) and has no `restart`; start it before the run (needed by a)"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "settings_and_add_dirs": {
+  "errors": [
+   "claude: settings file not found: /nonexistent/s.json",
+   "claude: add_dirs entry is not a folder: /nonexistent/dir",
+   "claude: add_dirs entry <ROOT>/task-auto/verifiers exposes the verifiers folder"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits --settings /nonexistent/s.json --add-dir /nonexistent/dir --add-dir <ROOT>/task-auto/verifiers --add-dir <ROOT>",
+  "tasks": [
+   "a"
+  ],
+  "warnings": []
+ },
+ "state_driven": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: codex)\n  claude limited until 2026-11-01 17:30 +03:30 (in 2h)\n  claude: opus limited until 2026-11-01 16:30 +03:30 (in 1h) (other models of claude are available)\n\n 1. a  [interrupted]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n 2. b  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium  after a\n 3. c  [done]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium  after b  priority 5\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a",
+   "b",
+   "c"
+  ],
+  "warnings": [
+   "the saved state says current = codex with task(s) a mid-attempt: they continue on codex, and new tasks begin on claude; pass --provider claude to move them too"
+  ]
+ },
+ "subfolder_repo": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo sub (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: sub -> develop\n\nfirst command (cwd <ROOT>/repo/sub, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": [
+   "<ROOT>/repo/sub is a folder inside the repository <ROOT>/repo: baton works on all of repo (its dirty check, WIP commits and branches cover the whole repository)"
+  ]
+ },
+ "unsafe_and_heavy": {
+  "errors": [
+   "rung r3: codex model 'gpt-astra' is not known to the installed codex (known: sol)"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: opus xhigh, codex: gpt-astra medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model opus --effort xhigh --permission-mode bypassPermissions --dangerously-skip-permissions",
+  "tasks": [
+   "a"
+  ],
+  "warnings": [
+   "claude: permission_mode = 'bypassPermissions', extra_args '--dangerously-skip-permissions' switches the agent's permission checks or sandbox off; the deny rules in the settings file no longer limit what a task can do. Run it in a container or as a separate user, never in a repository you cannot lose",
+   "claude: heavy settings in r3 (opus xhigh); they use the quota fast and rarely pay off outside verifiers and the hardest work. Prefer high effort on the workhorse rung",
+   "codex: heavy settings in r3 (gpt-astra medium); they use the quota fast and rarely pay off outside verifiers and the hardest work. Prefer high effort on the workhorse rung"
+  ]
+ },
+ "verifier_providers": {
+  "errors": [
+   "start_provider 'claude' is disabled",
+   "task c: none of its providers (claude) is enabled",
+   "verifier v: its providers includes codex, which cannot hide files from the agent (`codex exec` has no read restriction), so the verifier would see implementer output; use claude, or set run.allow_codex_verifiers = true to accept that"
+  ],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: codex: sol medium\n 2. c  [pending]  repo repo (feat/x from develop)  rung r3: \n 3. v  [verify]  [pending]  repo repo (verify/v from feat/x)  rung r3: codex: sol medium  after a\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/codex exec --json --sandbox workspace-write --model sol -c model_reasoning_effort=medium -",
+  "tasks": [
+   "a",
+   "c",
+   "v"
+  ],
+  "warnings": []
+ },
+ "watch_repos": {
+  "errors": [],
+  "plan": "providers: claude > codex (begins on: claude)\n\n 1. a  [pending]  repo repo (feat/x from develop)  rung r3: claude: sonnet medium, codex: sol medium\n\nwhen the run ends each repository goes back to the branch it is on now: repo -> develop\n\nfirst command (cwd <ROOT>/repo, prompt on stdin):\n  <ROOT>/bin/claude -p --output-format stream-json --verbose --model sonnet --effort medium --permission-mode acceptEdits",
+  "tasks": [
+   "a"
+  ],
+  "warnings": [
+   "watch_repos: <ROOT>/plainwatch is not a git repository"
+  ]
+ }
+}
