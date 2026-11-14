@@ -39,6 +39,22 @@ Claude settings of the workspace; allow the forms you need under `permissions.al
 `providers.claude.settings` (or per task with `settings`). `rerun_after` for verifiers (#14) is not
 implemented; `after` provides the ordering.
 
+### Resuming stalled attempts
+
+- **`baton resume TASK_ID`** replaces an unfinished attempt through the live owner's control queue, or
+  continues saved work under the run lock after stop/crash. Targeted TERM/KILL and descendant cleanup
+  precede WIP preservation and a fresh session. Requests bind to a unique owner/attempt; duplicates and
+  stale requests cannot start overlapping attempts. A bounded control wait reports unresponsive owners;
+  recovery waits for lock release and branch cleanup, without bypassing approvals or verifier gates.
+  Earlier outputs/results, attempt numbers, progress and interruption reasons stay available.
+- **Safe scaffold ignore transitions:** interrupted tasks can return to their saved branch with untracked
+  dependency output ignored there. Tracked edits, nonignored untracked files and collisions refuse recovery
+  with paths; no reset, clean, stash or dependency WIP commit is used.
+- **Activity visibility and suspend-aware watchdog:** status/watch show last output, inactivity and meaningful
+  stdout/stderr activity, distinguish waits from active children, and name the resume command. Existing
+  `stall_minutes` stays off by default and has a commented template example. Its one-retry budget now survives
+  restart; long observation gaps grant a fresh interval and are excluded from total elapsed timeout.
+
 
 - **Expired limits are dropped when the state is loaded.** A provider limit (or per-model limit) whose reset
   time has passed is cleared as `run.json` is read (`Runner`, `baton plan`, `baton status`), with one log

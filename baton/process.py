@@ -93,6 +93,7 @@ class Attempt:
     returned_to: str | None = None   # stopped so the task could go back to this provider
     stalled: bool = False       # ended by baton because the output stopped growing ([run] stall_minutes)
     stall_note: str = ""        # the last line the agent printed before it stalled
+    resumed: bool = False       # operator requested a fresh session through the owning runner
 
     @property
     def seconds(self) -> float:
@@ -123,6 +124,7 @@ class _Wait:
     returned_to: str | None = None
     stalled: bool = False
     stall_note: str = ""
+    resumed: bool = False
 
 
 class _StallWatch:
@@ -131,7 +133,8 @@ class _StallWatch:
     def __init__(self, stall_s: float, out_path: Path, err_path: Path) -> None:
         self.seconds = stall_s
         self.paths = (out_path, err_path)
-        self.seen_size, self.grown_at = -1, time.monotonic()
+        self.seen_size, self.grown_at = sum(_size(p) for p in self.paths), time.monotonic()
+        self.checked_at = self.grown_at
 
     def check(self) -> tuple[bool, str]:
         """(stalled, the last line it printed). Call it after each wait slice."""
@@ -139,12 +142,35 @@ class _StallWatch:
             return False, ""
         size = sum(_size(p) for p in self.paths)
         now = time.monotonic()
+        gap = now - self.checked_at
+        self.checked_at = now
+        # A long observation gap (suspend, clock jump, descheduling) is not proof of a hung provider.
+        if gap > max(5.0, min(30.0, self.seconds / 4) + 5):
+            self.grown_at = now
         if size != self.seen_size:
             self.seen_size, self.grown_at = size, now
             return False, ""
         if now - self.grown_at >= self.seconds:
-            return True, _last_line(self.paths[0]) or _last_line(self.paths[1])
+            return True, last_activity(*self.paths)
         return False, ""
+
+
+def last_activity(out_path: Path, err_path: Path) -> str:
+    from .watch import render
+    lines = tail_bytes_of(out_path, 8000).decode("utf-8", errors="replace").splitlines()
+    meaningful = []
+    import json
+    for line in lines:
+        try:
+            ev = json.loads(line)
+            item = ev.get("item") or {}
+            if ev.get("type") == "item.completed" and item.get("type") == "command_execution":
+                meaningful.append(f"command completed (exit {item.get('exit_code')}): {item.get('command', '')}")
+            else:
+                meaningful.extend(render(line))
+        except (ValueError, AttributeError):
+            meaningful.extend(render(line))
+    return "; ".join([*meaningful[-2:], _last_line(err_path)])[:1000].strip("; ")
 
 
 class ProcessMixin:
@@ -196,6 +222,9 @@ class ProcessMixin:
         """The agent has exited: end whatever it left running (a dev server, a `nohup` job), then drop its pid."""
         if end_group(pgid, self.group_grace_s):
             self.log(f"task {task.id}: the agent left processes running; they were ended")
+        if group_alive(pgid):
+            self._resume_refused = True
+            raise RunStopped(f"task {task.id}: process group {pgid} survived bounded cleanup; resume refused")
         with self._lock:
             if self.state.agents.pop(task.id, None) is not None:
                 self.save()
@@ -206,10 +235,17 @@ class ProcessMixin:
         for tid, a in list(self.state.agents.items()):
             pid, pgid = int(a.get("pid", 0)), int(a.get("pgid", 0))
             same = proc_start_time(pid)
+            if pid != pgid:
+                raise RunStopped(f"task {tid}: recorded pid/group do not identify an owned session; no replacement started")
             if pgid <= 1 or (same is not None and a.get("start") and same != a["start"]):
                 continue                # the pid now belongs to another process
+            if group_alive(pgid) and (not same or not a.get("start")):
+                raise RunStopped(f"task {tid}: cannot establish ownership of leftover group {pgid}; "
+                                 "no replacement started; inspect the recorded agent identity")
             if end_group(pgid, self.group_grace_s):
                 self.log(f"task {tid}: ended an agent (pid {pid}) left running by a run that died")
+            if group_alive(pgid):
+                raise RunStopped(f"task {tid}: leftover group {pgid} survived cleanup; no replacement started")
         with self._lock:
             self.state.agents = {}
             self.save()
@@ -265,10 +301,21 @@ class ProcessMixin:
         res = _Wait()
         while True:
             try:
-                res.code = child.wait(timeout=max(self._wait_step(deadline, watch, stall.seconds), 0))
+                step = max(self._wait_step(deadline, watch, stall.seconds), 0)
+                before = time.monotonic()
+                res.code = child.wait(timeout=step)
                 return res
             except subprocess.TimeoutExpired:
-                if self._end_if_due(res, child, deadline, watch, stall):
+                gap = time.monotonic() - before
+                if gap > step + 5:
+                    deadline += gap - step   # do not spend timeout/retries on an observation gap
+                    stall.grown_at = before + gap  # the same gap grants a fresh stall interval, even near its deadline
+                self.apply_operator_ops(resume_only=True)
+                if self.state.task(task.id).resume_pending == self.state.task(task.id).attempts:
+                    res.resumed, res.stall_note = True, last_activity(out_path, err_path)
+                    res.code = self._kill(child)
+                    return res
+                if self._end_if_due(res, child, deadline, watch, stall, task):
                     return res
 
     def _wait_step(self, deadline: float, watch: str | None, stall_s: float) -> float:
@@ -276,10 +323,10 @@ class ProcessMixin:
         step = min(left, self.cfg.return_check_s) if watch else left
         if stall_s:
             step = min(step, max(1.0, min(30.0, stall_s / 4)))
-        return step
+        return min(step, 1.0)  # control protocol stays responsive even with watchdog off
 
     def _end_if_due(self, res: "_Wait", child: subprocess.Popen, deadline: float, watch: str | None,
-                    stall: "_StallWatch") -> bool:
+                    stall: "_StallWatch", task: Task) -> bool:
         """After a wait slice: end the child if it is out of time, the preferred provider is back, or
         it stalled. Returns whether it was ended."""
         if time.monotonic() >= deadline:
@@ -290,6 +337,12 @@ class ProcessMixin:
             res.stalled, res.stall_note = stall.check()
             if not res.stalled:
                 return False
+        if res.stalled:
+            with self._lock:
+                ts = self.state.task(task.id)
+                ts.stall_retries = max(ts.stall_retries, 1)
+                ts.last_end = f"watchdog interrupted attempt {ts.attempts}; last activity: {res.stall_note}"
+                self.save()  # durable before termination/WIP: a crash cannot replenish the retry budget
         res.code = self._kill(child)
         return True
 
@@ -343,11 +396,10 @@ class ProcessMixin:
                 self.forget_agent(task, pgid)
         wall = self._clock_step_back(task, wall, mono0)
         return Attempt(res.code, started, self.clock.now(), res.timed_out, out_path, err_path, wall,
-                       returned_to=res.returned_to, stalled=res.stalled, stall_note=res.stall_note)
+                       returned_to=res.returned_to, stalled=res.stalled, stall_note=res.stall_note, resumed=res.resumed)
 
-    @staticmethod
-    def _kill(p: subprocess.Popen) -> int | None:
-        for sig, grace in ((signal.SIGTERM, 30), (signal.SIGKILL, 10)):
+    def _kill(self, p: subprocess.Popen) -> int | None:
+        for sig, grace in ((signal.SIGTERM, self.kill_grace_s), (signal.SIGKILL, 5)):
             try:
                 os.killpg(p.pid, sig)
             except ProcessLookupError:

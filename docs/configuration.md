@@ -23,7 +23,7 @@ folders and `lanes` need the run to be started again.
 | `start_provider` | string | `"codex"` when enabled, else the first enabled provider | provider a run begins on |
 | `default_base` | string | none | branch new task branches are created from (a task's `base` overrides it); baton never fetches, so it must exist locally |
 | `timezone` | string (IANA name) | this machine's zone | zone for reset times printed without one (Codex). Leave it out unless you know the CLI prints another zone: a zone that is not your machine's misreads resets by hours, and `baton plan` warns |
-| `task_timeout_min` | number > 0 | `240` | hard wall-clock cap per attempt, minutes |
+| `task_timeout_min` | number > 0 | `240` | elapsed-time cap per attempt, minutes; monotonic, excluding suspend/long observation gaps (see operations) |
 | `max_turns` | whole number ≥ 0 | `0` (off) | Claude `--max-turns` per attempt (a task can set its own) |
 | `reset_margin_seconds` | whole number ≥ 0 | `180` | wait this long past a printed reset time |
 | `unknown_limit_cooldown_min` | number ≥ 0 | `30` | cooldown for a limit with no readable reset time |
@@ -56,7 +56,7 @@ folders and `lanes` need the run to be started again.
 | `required_env` | list of names | `[]` | environment variables every agent task needs set (shell or `[providers.*] env`); `plan` fails and no attempt is spent without them. Also allowed in a provider table and a task file |
 | `min_version` | string | unset | `baton plan` warns when the installed baton is older than this (a run records the version it used in `run.json` and on the first line of `SUMMARY.md`) |
 | `min_free_mb` | number ≥ 0 | `500` | `plan` and `run` warn when the folder holding `results/` has less free space than this (0 = off) |
-| `stall_minutes` | number ≥ 0 | `0` (off) | end an attempt whose output has not grown for this long, keep its work as WIP and retry once with a note saying where it stopped; a task can set its own |
+| `stall_minutes` | number ≥ 0 | `0` (off) | end an attempt whose stdout and stderr have not grown for this long, keep WIP and retry once; a second stall fails (budget survives restart). A task can override or use `0` to opt out; possible suspend gaps grant a fresh interval, see operations |
 | `max_limit_cycles` | whole number ≥ 1 | `6` | a task fails after this many usage-limit outcomes in a row that changed nothing in its repository (a message misread as a limit, or a limit that never lifts) |
 | `wip_secret_patterns` | list of globs | `.env`, `.env.*` (not `.env.example`/`.sample`/`.template`/`.dist`), `*.pem`, `*.p12`, `*.pfx`, `*.keystore`, `id_rsa*`, `id_ed25519*`, `id_ecdsa*`, `id_dsa*`, `.pypirc`, plus any file that starts like a private key | file names a WIP commit **never** takes (untracked ones go to `.git/info/exclude`); `[]` switches the tier off |
 | `wip_warn_patterns` | list of globs | `*.key`, `credentials*`, `secrets.*`, `.npmrc`, `*.token`, `*.secret`, `service-account*.json`, `.netrc`, `.htpasswd` | file names a WIP commit takes but **reports loudly** (log, task note, `## Warnings` in `SUMMARY.md`); `[]` switches the tier off. A glob with a `/` is matched against the whole path from the repository's top folder; case is ignored |

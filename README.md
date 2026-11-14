@@ -63,10 +63,20 @@ The full walk-through, with a throwaway repository and a real task, is in
 | `baton plan` | preflight: checks the tools, repositories, branches, models, sandbox and config; prints the order and the model each task would use; runs nothing |
 | `baton run` | runs every unfinished task (`--follow` keeps going and picks up new task files and approvals; `--only ID` runs one task) |
 | `baton status` / `baton watch` | the summary table and what to do next / a live view of the current agent's output |
+| `baton resume ID` | replace an unfinished/stalled attempt with a fresh session using preserved work and notes, including with a live runner |
 | `baton stop` | from another terminal: finish the current task, then end cleanly |
 | `baton approve ID` / `baton reject ID` | decide a human checkpoint |
 | `baton mark ID done` / `baton retry ID` | fix up a stuck task by hand instead of editing the state |
 | `baton review --only ID` / `baton review-fix --only ID` | optional: a read-only review of a done task by the other provider, then one round of fixes for its blockers (only when you run them) |
+
+If an attempt goes quiet, `baton status` and `baton watch` show its last-output time, inactivity and
+last meaningful activity. `baton resume ID` asks its owner to end that attempt's process group, preserve
+WIP and start one replacement. After a stop or crash it takes the normal run lock and continues the saved
+task branch. Approvals and verifier gates still apply; provider conversation and in-flight commands are
+not restored. See the [recovery journey](docs/operations.md#resuming-an-unfinished-attempt).
+
+The existing output watchdog is **off by default**: opt in with `[run] stall_minutes = 20`, override it
+per task, or use `stall_minutes = 0` to opt a task out. Quiet builds can be legitimate.
 
 Everything else (`providers reset`, `classify`, exit codes, the night checklist) is in
 [docs/operations.md](docs/operations.md).

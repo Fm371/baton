@@ -56,6 +56,9 @@ class TaskState:
     review_by: str = ""            # the provider that wrote it
     review_at: str = ""
     fix_round: int = 0             # `baton review-fix` runs started for this task (one allowed without --force)
+    resume_pending: int | None = None  # attempt interrupted by an accepted operator request
+    interruptions: list[dict] = field(default_factory=list)
+    stall_retries: int = 0             # persists across crashes and dispatcher trips
     fix_state: str = ""            # "" | running | done | blocked
 
 

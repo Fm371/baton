@@ -101,8 +101,30 @@ of, once you know the provider is available.
 that refuses sockets, a service that was down, a variable that was unset). See
 [environment.md](environment.md). After fixing the cause: `baton retry <id>`.
 
-**A task ends `failed` after "stalled".** Its output did not grow for `stall_minutes` twice. Look at the end of
-`results/<id>/attempt-NN.<provider>.out`: usually a test waiting on a service or a network call.
+**A provider is alive but output stopped, including after suspend/wake.** Read `baton status` or
+`baton watch` for last output, inactivity and the last meaningful stdout/stderr activity, then run
+`baton resume TASK_ID`. The owner replaces only that attempt with a fresh session and preserved work/notes;
+when no owner is active, the same command resumes the saved task branch under the normal lock. Do not
+send manual signals or switch branches while an owner is still cleaning up. Sleep is a possible cause,
+not a diagnosis. Idle follow loops and provider cooldown/approval waits have no child to interrupt.
+
+**Resume says control is unacknowledged, cleanup is pending, or the owner lacks resume control.**
+The command refuses to start another state writer while the owner holds its lock. Check `logs/run.log`
+and `baton status`. An old runner cannot acquire this feature mid-run: after its normal shutdown and
+lock release, rerun `baton resume TASK_ID`. No lock bypass or `--force` is supported. If leftover process
+identity cannot be established, resume reports the recorded group and refuses to signal it or start work;
+inspect that process identity before further recovery.
+
+**Resume refuses a scaffold-to-task branch transition.** It allows untracked dependency output only when
+the saved task branch ignores every untracked path, and refuses tracked edits and file collisions with the
+branch and paths. All files stay intact. Resolve those named conflicts and rerun resume. A normal ignore
+transition needs no manual branch switch and never commits dependencies as WIP on the scaffold base.
+
+**A task ends `failed` after "stalled".** Its output did not grow for `stall_minutes` twice. Inspect both
+`results/<id>/attempt-NN.<provider>.out` and `.err`. The watchdog defaults to off; enable it explicitly for
+the workspace or a task, and use task `stall_minutes = 0` for legitimate quiet commands. Possible suspend
+observation gaps grant a fresh interval, rather than repeatedly spending retries. `baton resume ID` keeps
+history and the spent watchdog budget; `baton retry ID` starts over after you resolve the cause.
 
 **`another baton run is already active in this folder (pid N, since ...)`.** Look at `baton status` and
 `tmux ls`; the process may be asleep. `baton stop` asks it to finish. The lock is released by the system when

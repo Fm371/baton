@@ -8,6 +8,7 @@ import fnmatch
 import os
 import signal
 import subprocess
+import tempfile
 from pathlib import Path
 
 GIT_TIMEOUT_S = 300.0           # one git command; a hook or credential prompt that waits forever is cut off
@@ -51,14 +52,15 @@ def _label(args: list[str]) -> str:
     return " ".join(rest[:3])
 
 
-def _run(args: list[str], cwd: Path | str | None = None, timeout: float | None = None) -> subprocess.CompletedProcess:
-    """Run `git <args>`. No stdin, no terminal prompt, a time limit (the whole process group is killed when
+def _run(args: list[str], cwd: Path | str | None = None, timeout: float | None = None,
+         input_text: str | None = None) -> subprocess.CompletedProcess:
+    """Run `git <args>`. Optional explicit input, no terminal prompt, a time limit (the whole process group is killed when
     it expires), and output decoded with surrogateescape, so a file name that is not UTF-8 never raises.
     Anything that stops git from running at all is a GitError."""
     cmd = ["git", *args]
     try:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, env=_env(), text=True, encoding="utf-8",
+        proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=_env(), text=True, encoding="utf-8",
                                 errors="surrogateescape", start_new_session=True)
     except FileNotFoundError as e:
         raise GitError("git is not installed or not on PATH") from e
@@ -66,7 +68,7 @@ def _run(args: list[str], cwd: Path | str | None = None, timeout: float | None =
         raise GitError(_one_line(f"cannot run git {_label(args)}: {e}")) from e
     limit = timeout if timeout is not None else GIT_TIMEOUT_S
     try:
-        out, err = proc.communicate(timeout=limit)
+        out, err = proc.communicate(input=input_text, timeout=limit)
     except subprocess.TimeoutExpired:
         try:
             os.killpg(proc.pid, signal.SIGKILL)
@@ -186,6 +188,57 @@ def checkout(repo: Path, branch: str, base: str | None) -> str:
         raise GitError(f"{repo.name}: base {base} does not exist")
     git(repo, "checkout", "-q", "-b", branch, base)
     return f"created {repo.name}:{branch} from {base}"
+
+
+def resume_checkout_problem(repo: Path, branch: str) -> str | None:
+    """Allow only untracked files ignored by the saved branch. Read its ignore rules in isolation.
+    Tracked user edits are refused even when Git could carry them to the task branch."""
+    entries = _status_entries(repo)
+    tracked = [p for xy, p in entries if xy != "??"]
+    if tracked:
+        return f"cannot switch to {branch}: tracked edits at {', '.join(printable(p) for p in tracked[:8])}"
+    paths = [p for _, p in entries]
+    if not paths:
+        return None
+    if not branch_exists(repo, branch):
+        return f"cannot switch to {branch}: saved branch missing; untracked paths {', '.join(paths[:8])}"
+    ignored = _ignored_on_branch(repo, branch, paths)
+    conflicts = [p for p in paths if p not in ignored]
+    if conflicts:
+        return f"cannot switch to {branch}: untracked paths not ignored there: {', '.join(printable(p) for p in conflicts[:8])}"
+    return None
+
+
+def _ignored_on_branch(repo: Path, branch: str, paths: list[str]) -> set[str]:
+    with tempfile.TemporaryDirectory(prefix="baton-ignore-") as tmp:
+        top = Path(tmp)
+        ignores = git(repo, "ls-tree", "-r", "--name-only", "-z", branch).split("\0")
+        for name in ignores:
+            if name.rsplit("/", 1)[-1] != ".gitignore":
+                continue
+            dest = top / name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(git(repo, "show", f"{branch}:{name}"), encoding="utf-8", errors="surrogateescape")
+        for name in paths:
+            (top / name).parent.mkdir(parents=True, exist_ok=True)
+        # check-ignore reads only the isolated ignore rules, never dependency contents.
+        result = _run(["-C", str(repo), f"--work-tree={top}", "check-ignore", "--no-index", "-z", "--stdin"],
+                      input_text="\0".join(paths) + "\0")
+        if result.returncode not in (0, 1):
+            raise GitError(f"cannot check ignore rules for {branch}: {result.stderr.strip()}")
+        return set(result.stdout.split("\0"))
+
+
+def checkout_resume(repo: Path, branch: str) -> str:
+    if current_branch(repo) == branch:
+        return ""
+    problem = resume_checkout_problem(repo, branch)
+    if problem:
+        raise GitError(problem)
+    # Git also checks tracked/untracked collisions, including files ignored on either side.
+    # Never permit checkout's default of overwriting ignored files.
+    git(repo, "checkout", "-q", "--no-overwrite-ignore", branch)
+    return f"resumed {repo.name}:{branch}, preserving ignored output"
 
 
 # Two tiers of "looks like a secret" file names (globs; one without a `/` is matched against the file name,

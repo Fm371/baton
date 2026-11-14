@@ -4,7 +4,8 @@ and the hints `baton status` prints about how to get a stuck run moving.
 Only the runner writes state/run.json while it is running. So with no run active these commands take
 the run lock and edit the state themselves; with a run active they leave a small file in state/ops/,
 which the runner applies between tasks (`baton mark`, `baton providers reset`). `baton retry` needs
-the run to be stopped, because it starts a run of its own."""
+the run to be stopped, because it starts a run of its own. `baton resume` binds a queued request
+to the live owner/attempt, or continues preserved work under the normal run lock after it exits."""
 
 from __future__ import annotations
 
@@ -129,6 +130,7 @@ def apply_mark(r, task: Task, status: str, note: str, result_file: Path | None) 
     text = mark_text(task, status, note, result_file, result_path)
     if text is not None:
         _write_marked_result(cfg, task, status, text, result_path)
+    ts.resume_pending = None
     ts.status = status
     ts.note = f"marked {status} by operator" + (f": {note}" if note else "")
     ts.overridden_by = "operator"
@@ -236,13 +238,16 @@ def queue_op(cfg: Config, op: dict) -> None:
     atomic_write(d / f"{time.time_ns()}-{uuid.uuid4().hex[:6]}.json", json.dumps(op) + "\n")
 
 
-def take_ops(cfg: Config) -> list[dict]:
-    """The queued operator commands, oldest first; the files are removed as they are read."""
+def take_ops(cfg: Config, only: set[str] | None = None) -> list[dict]:
+    """Consume queued commands oldest first; an optional kind filter leaves other files queued."""
     d = cfg.state_dir / "ops"
     out = []
     for p in sorted(d.glob("*.json")) if d.is_dir() else []:
         try:
-            out.append(json.loads(p.read_text(encoding="utf-8")))
+            op = json.loads(p.read_text(encoding="utf-8"))
+            if only is not None and isinstance(op, dict) and op.get("op") not in only:
+                continue
+            out.append(op)
         except (OSError, ValueError):
             pass
         p.unlink(missing_ok=True)
@@ -279,3 +284,108 @@ def hints(ordered: list[Task], state, active: bool) -> list[str]:
         out.append("`baton run` continues the run")
     seen = set()
     return [h for h in out if not (h in seen or seen.add(h))][:12]
+
+
+# ------------------------------------------------------------------ resume
+
+
+def validate_resume(r, task: Task) -> None:
+    """Resume never overrides a completed task, human decision or verifier gate."""
+    ts = r.state.task(task.id)
+    if not task.runs_agent:
+        raise OpsError(f"{task.id} has no provider attempt; use its normal approval/check command")
+    if ts.status == "done" or not ts.attempts:
+        raise OpsError(f"{task.id} is {ts.status}, with {ts.attempts} attempts; nothing unfinished to resume")
+    by_id = {t.id: t for t in r.ordered}
+    gates = [t.id for t in ancestors(task, by_id)
+             if (t.is_approval or t.is_verifier) and r.state.task(t.id).status != "done"]
+    holds = [g for g in (ts.rejected_by, ts.gated_by) if g and r.state.task(g).status != "done"]
+    if holds or gates:
+        raise OpsError(f"{task.id} is held by verifier/approval {', '.join(gates or holds)}; "
+                       "resolve that gate before resume")
+
+
+def request_resume(cfg: Config, tid: str) -> str:
+    """Queue a request bound to this owner and attempt. Never write run.json or signal a PID."""
+    from .watch import lock_info
+    info = lock_info(cfg) or {}
+    if not run_active(cfg) or info.get("control") != "resume-v1" or not info.get("run"):
+        raise OpsError("the lock owner does not advertise resume control (or is finishing cleanup); "
+                       "wait for its lock release, then run `baton resume " + tid + "` again; no process was signalled")
+    ordered = load_ordered(cfg)
+    task = find_task(ordered, tid)
+    r = _runner(cfg, ordered)
+    validate_resume(r, task)
+    ts = r.state.task(tid)
+    if tid not in r.state.agents and ts.status in ("running", "waiting"):
+        return f"{tid}: no provider child is active (waiting for approval/provider cooldown or cleanup); no interruption needed"
+    # Serialize publication per run/task/attempt. A crash before publication leaves an empty
+    # claim, which the next invocation can safely publish; completed claims deduplicate clicks.
+    key = f"resume-{info['run']}-{tid}-{ts.attempts}"
+    d = cfg.state_dir / "ops"
+    d.mkdir(parents=True, exist_ok=True)
+    with (d / (key + ".claim")).open("a+") as claim:
+        fcntl.flock(claim, fcntl.LOCK_EX)
+        claim.seek(0)
+        if claim.read():
+            return f"{tid}: resume already requested for attempt {ts.attempts}; see `baton status`"
+        queue_op(cfg, {"op": "resume", "task": tid, "run": info["run"], "attempt": ts.attempts})
+        claim.write("queued\n")
+        claim.flush()
+    return (f"{tid}: resume queued for attempt {ts.attempts}; the owner will preserve WIP and start one fresh attempt, "
+            "ending only the targeted process group if active; see `baton status`. "
+            "If it remains unacknowledged, the owner is not servicing control; no second writer will start.")
+
+
+def apply_resume(r, op: dict) -> None:
+    task = find_task(r.ordered, str(op.get("task")))
+    validate_resume(r, task)
+    ts = r.state.task(task.id)
+    if op.get("run") != r.run_id or op.get("attempt") != ts.attempts:
+        raise OpsError(f"{task.id}: stale resume request; its owner or attempt has changed")
+    if ts.resume_pending is not None:
+        raise OpsError(f"{task.id}: resume already accepted")
+    if task.id not in r.state.agents and r.repo_busy(task.repo):
+        queue_op(r.cfg, op)  # its worker is finishing, or another task still owns this repository
+        return
+    ts.resume_pending = ts.attempts
+    if task.id not in r.state.agents:
+        prepare_resume(r, task, status="waiting")
+        r.log(f"task {task.id}: operator resume accepted; requeued preserved work")
+        return
+    ts.last_end = f"operator resume requested for attempt {ts.attempts}"
+    r.save()
+    r.log(f"task {task.id}: operator resume accepted for attempt {ts.attempts}; ending its process group")
+
+
+def prepare_resume(r, task: Task, status: str = "running") -> None:
+    """Continue saved history/notes; called only under the owning runner or offline run lock."""
+    ts = r.state.task(task.id)
+    ts.status, ts.finished = status, None
+    from .process import last_activity
+    from .watch import _newest, attempts
+    files = [p for p in attempts(r.cfg) if p.parent.name == task.id]
+    path = _newest(files)
+    where = last_activity(path, path.with_suffix(".err")) if path else "no recorded output"
+    ts.last_end = "operator resume: fresh provider session after interruption; " + ts.last_end + "; last activity: " + where
+    ts.interruptions.append({"attempt": ts.attempts, "reason": ts.last_end, "at": r.clock.now().isoformat()})
+    r.save()
+
+
+def wait_resume(cfg: Config, tid: str, attempt: int, timeout: float = 45.0) -> bool:
+    """Wait for replacement/finish, or lock release. False permits a lock-protected offline resume.
+    Never signal an owner that stops servicing its control queue."""
+    from .state import load_state
+    deadline = time.monotonic() + timeout
+    while True:
+        ts = load_state(cfg.state_dir / "run.json").task(tid)
+        if ts.attempts > attempt or ts.status == "done":
+            return True
+        if not run_active(cfg):
+            return False  # lock release also proves that normal branch restoration finished
+        if time.monotonic() >= deadline:
+            stage = "accepted; cleanup or provider availability is still pending" if ts.resume_pending == attempt else "not acknowledged"
+            raise OpsError(f"{tid}: resume {stage} after {timeout:g}s; the owner still holds the run lock. "
+                           "No second writer or replacement was launched by this command. "
+                           "Inspect `baton status` and logs/run.log; retry resume after the owner releases its lock")
+        time.sleep(0.05)

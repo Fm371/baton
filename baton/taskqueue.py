@@ -98,10 +98,14 @@ class QueueMixin:
             self.save()
         return decided
 
-    def apply_operator_ops(self) -> None:
-        """`baton mark` and `baton providers reset` typed while this run is active: applied here,
-        between tasks, by the one process that writes the state."""
-        for op in ops.take_ops(self.cfg):
+    def apply_operator_ops(self, resume_only: bool = False) -> None:
+        """Apply queued operator commands under the owner’s state lock. Resume is polled during
+        attempts too; mark refuses any task whose attempt is still running."""
+        with self._lock:
+            self._take_operator_ops(resume_only)
+
+    def _take_operator_ops(self, resume_only: bool) -> None:
+        for op in ops.take_ops(self.cfg, only={"resume"} if resume_only else None):
             try:
                 with self._lock:
                     if op.get("op") == "mark":
@@ -110,6 +114,8 @@ class QueueMixin:
                         ops.apply_mark(self, task, str(op.get("status")), str(op.get("note") or ""), result)
                     elif op.get("op") == "retry":
                         ops.apply_retry(self, ops.find_task(self.ordered, str(op.get("task"))))
+                    elif op.get("op") == "resume":
+                        ops.apply_resume(self, op)
                     elif op.get("op") == "providers_reset" and op.get("provider") in self.sched.status:
                         ops.apply_providers_reset(self, op["provider"])
                     else:
@@ -117,14 +123,27 @@ class QueueMixin:
             except ops.OpsError as e:
                 self.log(f"operator command ignored: {e}")
 
+    def has_queued_resumes(self) -> bool:
+        with self._lock:
+            return any(ts.status == "waiting" and ts.resume_pending is not None for ts in self.state.tasks.values())
+
+    def add_queued_resumes(self, pending: list[Task]) -> None:
+        """The owner requeues inactive unfinished tasks too, including an idle --follow run."""
+        with self._lock:
+            present = {t.id for t in pending}
+            for task in self.ordered:
+                ts = self.state.task(task.id)
+                if task.id not in present and ts.status == "waiting" and ts.resume_pending is not None:
+                    pending.append(task)
+
     # fields of a task file that may change between attempts; where it runs and what it depends on may not
     RELOAD_TASK_FIELDS = ("work_type", "rung", "resolved_rung", "timeout_min", "max_turns", "providers",
-                          "body", "priority")
+                          "body", "priority", "stall_minutes")
     # settings of baton.toml read again before each attempt; providers' enabled/bin and the paths need a restart
     RELOAD_RUN_FIELDS = ("routing", "task_timeout_min", "max_turns", "reset_margin_s", "unknown_limit_cooldown_min",
                          "max_sleep_hours", "quick_exit_s", "max_quick_unknown", "transient_wait_s",
                          "max_transient", "no_result_retries", "verifier_test_paths", "hardcoded_key_check",
-                         "return_mid_task", "return_check_s")
+                         "return_mid_task", "return_check_s", "stall_minutes")
     RELOAD_PROVIDER_FIELDS = ("extra_args", "env", "settings", "permission_mode", "effort_flag", "add_dirs",
                               "sandbox", "profile")
 

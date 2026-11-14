@@ -17,6 +17,7 @@ baton stop      # from another terminal: finish the current task, then end clean
 baton approve ID               # release the tasks held by an approval checkpoint
 baton reject ID --note "..."   # block them, with the note on every blocked task
 baton mark ID done --note "why"          # set a task's status by hand (also failed, blocked); --result FILE
+baton resume ID                          # preserve work/history and replace an unfinished attempt (live or stopped)
 baton retry ID                           # clear one task's state and run just that task again
 baton providers reset claude             # forget a stale limit or disabled flag
 baton review --only ID | --pending       # read-only review by the OTHER provider (--allow-same: see below)
@@ -47,7 +48,61 @@ command for each stuck task:
 
 While a run is active, `mark` and `providers reset` are queued in `state/ops/` and the run applies
 them between tasks (never to a task whose attempt is running); `retry` needs the run stopped,
-because it starts a run of its own. Only the run writes `run.json` while it is going.
+because it starts a run of its own. `resume` uses the live owner’s control queue instead. Only the run writes `run.json` while it is going.
+
+### Resuming an unfinished attempt
+
+1. Run `baton status` (or `baton watch`) to inspect the last-output timestamp, inactivity duration and
+   last meaningful activity from stdout and stderr. A successful subprocess completing does not imply
+   that the provider session exited. After five quiet minutes a live child is labelled **suspected stall**;
+   this is an observation, not proof that a quiet command hung or that laptop sleep caused it.
+2. Run `baton resume TASK_ID`. With a live runner, this queues a request bound to its unique owner and
+   attempt number. Only that owner writes `run.json`. It polls control during provider waits, terminates
+   only the targeted process group (TERM, then KILL after 30 seconds), finishes bounded descendant cleanup,
+   preserves WIP under `commit_leftovers`, and starts one fresh attempt. Other lanes keep running and
+   same-repository work remains serialized. Duplicate requests for the same owner/attempt are deduplicated.
+3. The command waits up to 45 seconds for the replacement/finished task. If the owner exits, it waits for
+   lock release (which includes branch restoration) before ordinary crash/WIP recovery. If control remains
+   unacknowledged or cleanup is still pending, it reports that stage and the held lock; it starts no second
+   writer. An older runner without this protocol is refused with an explicit reason. Inspect the log and
+   retry the same command once that owner has released its lock; do not switch branches during cleanup.
+
+After a clean stop or crash, the same command takes the normal run lock and resumes only that task.
+It preserves attempt numbering, earlier prompts/output/results, interruption reasons, and progress notes;
+the replacement prompt names the saved branch/HEAD and last activity and asks it to inspect completed work
+before repeating commands. This is a new provider session, not recovery of its exact conversation or an
+in-flight command. A completed task is not resumed. `partial`, failed, stopped or interrupted agent tasks
+can be resumed; this does not mark them done, reset provider limits, or override an unresolved approval or
+verifier gate. Approval and built-in-check tasks use their normal commands. No active child during a
+cooldown/approval/slot wait means there is nothing to interrupt; the owner continues its normal waiting.
+An ordinary idle `run --follow` is not a stalled provider attempt. If its queue already finished a task
+`partial` or failed, `resume` requeues that unfinished task through the owner without stopping the follow loop.
+
+If Ctrl+C saved WIP on a task branch and restored a scaffold base whose ignore rules differ, resume can
+switch back while preserving untracked output such as `node_modules/`, provided all untracked paths are
+ignored by the saved branch and there are no tracked edits. Git's collision checks also protect ignored
+files from being overwritten. Real conflicts refuse recovery with the target branch and paths. Nothing
+is reset, cleaned, stashed, excluded globally or committed on the scaffold branch. Resolve the named
+conflict yourself and rerun `baton resume TASK_ID`; dependency files remain in place and outside WIP.
+
+### Enabling the existing stall watchdog
+
+`[run] stall_minutes` defaults to `0` (off). For example, set `stall_minutes = 20` in `baton.toml`; a task's
+front matter can use its own value or `stall_minutes = 0` to disable it for a long quiet build. Inactivity
+means neither stdout nor stderr grew. When enabled it performs the same bounded child cleanup and WIP
+preservation, then retries once. Another stall fails clearly with the last output; the spent budget survives
+runner restarts and provider/dispatcher handoffs. Manual resume keeps that budget. `retry` begins a new task
+run with fresh counters. No global quiet-build timeout has been enabled.
+
+Stall and total attempt timeouts use monotonic elapsed time, independently of wall-clock timestamps and
+provider reset times. On systems where monotonic time excludes suspend, sleep spends neither timeout.
+If the observation gap exceeds the expected polling interval plus five seconds (or the watchdog's observation
+allowance), it is treated as a possible suspend/descheduling/clock jump: the total deadline excludes that gap
+beyond its expected wait, and the watchdog grants a fresh inactivity interval after wake. Wall-clock steps
+alone do not trigger stalls; watch follows attempt numbers within a task even if file mtimes move back. Each replacement gets new timers; suspended time cannot consume both stall
+attempts. Provider cooldowns still use their printed wall-clock reset times and can expire while asleep.
+This does not establish the cause of the 2026-11-04 incident; real suspend and provider behavior need
+verification outside the fake-provider suite.
 
 Run it inside tmux (`tmux new -s baton`, then `baton run`, detach with
 Ctrl+b d) and keep the laptop on power. Sleep/suspend stops the run in the middle of an attempt, so
