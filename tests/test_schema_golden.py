@@ -11,12 +11,14 @@ values and defaults of the valid cases. To record again after an intended change
 from __future__ import annotations
 
 import dataclasses
+import os
 import json
 import re
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 from zoneinfo import ZoneInfo
 
 from baton import config as cfg_mod
@@ -405,41 +407,49 @@ for _i, (_kind, _front) in enumerate(TASK_BAD):
 
 # ---- observing a case ----------------------------------------------------------------------------
 
+# A fixed HOME while observing, so ~ expands the same way for every user (the golden says <HOME>).
+FAKE_HOME = "/baton-test-home"
+
+
+def _scrub(text: str, root: str) -> str:
+    return text.replace(root, "<DIR>").replace(FAKE_HOME, "<HOME>")
+
+
 def plain(value, root: str):
-    """A JSON-able picture of a loaded object; the temp folder is replaced by <DIR>."""
+    """A JSON-able picture of a loaded object; the temp folder is <DIR> and the home folder <HOME>."""
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return {f.name: plain(getattr(value, f.name), root) for f in dataclasses.fields(value)}
     if isinstance(value, Path):
-        return str(value).replace(root, "<DIR>")
+        return _scrub(str(value), root)
     if isinstance(value, ZoneInfo):
         return f"zone:{value.key}"
     if isinstance(value, re.Pattern):
         return f"re:{value.pattern}"
     if isinstance(value, dict):
-        return {str(k).replace(root, "<DIR>"): plain(v, root) for k, v in value.items()}
+        return {_scrub(str(k), root): plain(v, root) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
         return [plain(v, root) for v in value]
     if isinstance(value, str):
-        return value.replace(root, "<DIR>")
+        return _scrub(value, root)
     return value
 
 
 def observe_config(text: str) -> dict:
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HOME": FAKE_HOME}):
         root = str(Path(tmp).resolve())
         path = Path(tmp) / "baton.toml"
         path.write_text(text, encoding="utf-8")
         try:
             cfg = load_config(path)
         except ConfigError as e:
-            return {"error": str(e).replace(root, "<DIR>")}
+            return {"error": _scrub(str(e), root)}
         except Exception as e:                                      # noqa: BLE001 - recorded, not hidden
-            return {"crash": f"{type(e).__name__}: {e}".replace(root, "<DIR>")}
+            return {"crash": _scrub(f"{type(e).__name__}: {e}", root)}
         return {"ok": plain(cfg, root)}
 
 
 def observe_task(kind: str, text: str) -> dict:
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"HOME": FAKE_HOME}):
         root = str(Path(tmp).resolve())
         (Path(tmp) / "baton.toml").write_text(TASK_CONFIG, encoding="utf-8")
         cfg = load_config(Path(tmp) / "baton.toml")
@@ -448,9 +458,9 @@ def observe_task(kind: str, text: str) -> dict:
         try:
             task_ = parse_task_file(path, cfg, kind)
         except TaskError as e:
-            return {"error": str(e).replace(root, "<DIR>")}
+            return {"error": _scrub(str(e), root)}
         except Exception as e:                                      # noqa: BLE001 - recorded, not hidden
-            return {"crash": f"{type(e).__name__}: {e}".replace(root, "<DIR>")}
+            return {"crash": _scrub(f"{type(e).__name__}: {e}", root)}
         return {"ok": plain(task_, root)}
 
 

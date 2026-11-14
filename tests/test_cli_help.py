@@ -1,6 +1,7 @@
 """The --help text of baton and of every subcommand (pins the argument parser so it can be
 restructured). Generated from the code before the refactor; zlib+base64 of repr(dict)."""
 
+import argparse
 import ast
 import base64
 import contextlib
@@ -47,12 +48,32 @@ HELP = ast.literal_eval(zlib.decompress(base64.b64decode(''.join(HELP_Z))).decod
 
 
 
+def _invocation_313(self, action):
+    """argparse's option column as Python 3.13+ writes it ("-c, --config CONFIG"); older versions
+    repeat the metavar ("-c CONFIG, --config CONFIG"), which also widens the column."""
+    if not action.option_strings:
+        default = self._get_default_metavar_for_positional(action)
+        return " ".join(self._metavar_formatter(action, default)(1))
+    if action.nargs == 0:
+        return ", ".join(action.option_strings)
+    default = self._get_default_metavar_for_optional(action)
+    return ", ".join(action.option_strings) + " " + self._format_args(action, default)
+
+
+def _same_usage_wrapping(text):
+    """Python 3.13 wraps a long usage line differently (where "..." lands); collapse the
+    whitespace of the usage block only, so its words are still compared."""
+    usage, sep, rest = text.partition("\n\n")
+    return " ".join(usage.split()) + sep + rest
+
+
 def helptext(cmd):
     out = io.StringIO()
     with mock.patch.dict(os.environ, {"COLUMNS": "100"}), contextlib.redirect_stdout(out), \
+            mock.patch.object(argparse.HelpFormatter, "_format_action_invocation", _invocation_313), \
             contextlib.suppress(SystemExit):
         cli.main([*cmd, "-h"])
-    return out.getvalue()
+    return _same_usage_wrapping(out.getvalue())
 
 
 class HelpTest(unittest.TestCase):
@@ -60,7 +81,7 @@ class HelpTest(unittest.TestCase):
         self.assertEqual(sorted(HELP), sorted(" ".join(c) or "baton" for c in COMMANDS))
         for cmd in COMMANDS:
             with self.subTest(cmd=" ".join(cmd) or "baton"):
-                self.assertEqual(helptext(cmd), HELP[" ".join(cmd) or "baton"])
+                self.assertEqual(helptext(cmd), _same_usage_wrapping(HELP[" ".join(cmd) or "baton"]))
 
 
 if __name__ == "__main__":
