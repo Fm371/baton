@@ -17,6 +17,7 @@ Each call takes the next step of its provider. A step may contain:
   write    {absolute path: text}: write those files (a reviewer's review, a fixer's report)
   sleep    seconds to sleep
   touch    path of a file to create (a test uses it to act while the run is busy)
+  touch_ready path created after progress/output are flushed, just before hang
   progress text written to the progress file the prompt names
   bwrap    true: print the bwrap sandbox error as a command's output (a broken sandbox)
   snapshot file name: copy results/SUMMARY.md there while the call runs
@@ -146,6 +147,8 @@ if step.get("stderr"):
     print(step["stderr"], file=sys.stderr)
 sys.stdout.flush()      # an agent that hangs has already printed what it printed (stall tests read the file)
 sys.stderr.flush()
+if step.get("touch_ready"):
+    open(step["touch_ready"], "w").write("x")
 time.sleep(step.get("hang", 0))
 span("end")
 sys.exit(step.get("exit", 0))

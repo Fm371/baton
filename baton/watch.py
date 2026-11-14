@@ -77,8 +77,15 @@ def attempts(cfg: Config) -> list[Path]:
             for p in d.iterdir() if ATTEMPT_RE.match(p.name)]
 
 
+def _attempt_number(path: Path) -> int:
+    return int(ATTEMPT_RE.match(path.name).group(1))
+
+
 def _newest(paths):
-    return max(paths, key=lambda p: (p.stat().st_mtime, p.name), default=None)
+    paths = list(paths)
+    same_task = len({p.parent for p in paths}) == 1
+    return max(paths, key=lambda p: (_attempt_number(p) if same_task else 0, p.stat().st_mtime, p.name),
+               default=None)
 
 
 def _running_tasks(cfg: Config) -> tuple[set, dict]:
@@ -230,6 +237,9 @@ def _first_attempt(cfg: Config, out: TextIO, follow: bool, active: Callable[[], 
                    sleep: Callable[[float], None], lane: str | None) -> Path | None:
     """The attempt to show; with `follow`, wait for the first one while the run is active."""
     path = latest_attempt(cfg, lane)
+    if path is None and follow and active():
+        print("no provider attempt yet: waiting for work/approval or provider availability; `baton status` shows why",
+              file=out, flush=True)
     while path is None:
         if not follow or not active():
             print("no attempt output yet: nothing has run in this folder", file=out)
@@ -259,9 +269,54 @@ def _drain(f, partial: str, show, out: TextIO) -> tuple[str, bool]:
 def _next_attempt(cfg: Config, lane: str | None, path: Path) -> Path | None:
     """A newer attempt than `path` (the run moved on), else None."""
     newer = latest_attempt(cfg, lane)
-    if newer is not None and newer != path and newer.stat().st_mtime >= path.stat().st_mtime:
-        return newer
-    return None
+    if newer is None or newer == path:
+        return None
+    if newer.parent == path.parent and _attempt_number(newer) > _attempt_number(path):
+        return newer  # attempt order survives a backwards wall-clock/file-mtime step
+    return newer if newer.stat().st_mtime >= path.stat().st_mtime else None
+
+
+def activity_lines(cfg: Config, active: bool, now: float | None = None, lane: str | None = None) -> list[str]:
+    """Read current output growth independently of SUMMARY's last write. No state writes."""
+    st = load_state(cfg.state_dir / "run.json")
+    now = time.time() if now is None else now
+    lines = []
+    for tid, ts in st.tasks.items():
+        if ts.status not in ("running", "waiting", "failed", "stopped"):
+            continue
+        if lane and st.running.get(tid, {}).get("lane") != lane:
+            continue
+        paths = [p for p in attempts(cfg) if p.parent.name == tid]
+        path = _newest(paths)
+        if path is None:
+            continue
+        lines.append(_attempt_activity(st, tid, path, active, now))
+    if active and st.tasks and not st.agents and not lines:
+        lines.append("idle follow/queue: waiting for work or approval; no running provider attempt")
+    return lines
+
+
+def _attempt_activity(st, tid: str, path: Path, active: bool, now: float) -> str:
+    from datetime import datetime, timezone
+    from .process import last_activity
+    err = path.with_suffix(".err")
+    stamp = max(p.stat().st_mtime for p in (path, err) if p.exists())
+    idle = max(0, now - stamp)
+    label = "running attempt" if active and tid in st.agents else "interrupted/resumable"
+    if active and tid not in st.agents:
+        label = "waiting for provider cooldown, slot or cleanup (no provider child)"
+    if active and tid in st.agents and idle >= 300:
+        label += "; suspected stall (quiet output is not proof)"
+    if st.task(tid).resume_pending is not None:
+        label = "resume accepted; ending attempt / preserving WIP"
+    when = datetime.fromtimestamp(stamp, timezone.utc).isoformat(timespec="seconds")
+    return (f"{tid}: {label}; last output {when}; inactivity {idle:.0f}s; "
+            f"last activity: {last_activity(path, err) or '(no meaningful event)'}; `baton resume {tid}`")
+
+
+def _show_activity(cfg: Config, out: TextIO, active: bool, lane: str | None) -> None:
+    for line in activity_lines(cfg, active, lane=lane):
+        print(line, file=out, flush=True)
 
 
 def watch(cfg: Config, out: TextIO, follow: bool = True, lines: int = 30, raw: bool = False,
@@ -274,6 +329,8 @@ def watch(cfg: Config, out: TextIO, follow: bool = True, lines: int = 30, raw: b
     if path is None:
         return 1
     _header(path, out)
+    _show_activity(cfg, out, active(), lane)
+    next_activity = time.monotonic() + 30
     f = open_at_backlog(path)
     try:
         backlog = [r for ln in f.read().splitlines() for r in show(ln)]
@@ -295,6 +352,9 @@ def watch(cfg: Config, out: TextIO, follow: bool = True, lines: int = 30, raw: b
                 _header(path, out)
                 f = open_at_backlog(path)
                 continue
+            if time.monotonic() >= next_activity:
+                _show_activity(cfg, out, active(), lane)
+                next_activity = time.monotonic() + 30
             if not active():
                 quiet += 1
                 if quiet >= 2:              # one more pass to catch a last write

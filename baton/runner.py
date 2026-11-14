@@ -11,6 +11,7 @@ import threading
 import time
 import sys
 import traceback
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -33,7 +34,7 @@ from .report import ReportMixin
 from .results import read_codex_status, read_status
 # re-exported: these names used to live in this module
 from .results import COMMIT_RE, HEADER_MAX, STATUS_RE, read_commit_message  # noqa: F401
-from .scheduler import Pick, Scheduler
+from .scheduler import Pick, ProviderStatus, Scheduler
 from .state import (FINISHED, DiskFull, RunState, expire_limits, is_disk_full, load_state, mid_attempt, save_state,
                     starting_provider)
 from .taskqueue import QueueMixin
@@ -116,9 +117,11 @@ class _Tried:
 class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
     def __init__(self, cfg: Config, clock: Clock | None = None, only: str | None = None,
                  echo: bool = True, force: bool = False, provider: str | None = None,
-                 follow: bool = False):
+                 follow: bool = False, resume: bool = False, resume_attempt: int | None = None):
         self.cfg = cfg
         self.clock = clock or Clock()
+        self.resume_attempt = resume_attempt
+        self.resume = resume
         self.only = only
         self.force = force
         self.follow = follow and not only      # keep running when the queue is empty
@@ -152,7 +155,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         self._cfg_seen = self.config_snapshot()      # baton.toml as it is now, to tell later edits from the rest
         self.run_is_live = False                   # True while run() holds the lock (not for an operator's edit)
         self._reload_error: str | None = None
-        self.run_id = self.clock.now().astimezone(self.tz).strftime("%Y%m%d-%H%M%S")
+        self.run_id = self.clock.now().astimezone(self.tz).strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
         self.verifiers: list[Task] = []
         self.ordered: list[Task] = []
         self._others: list[Task] = []     # other ready tasks, for skip-ahead
@@ -264,34 +267,73 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
                     print(active_message(self.cfg), flush=True)
                     return 4
                 time.sleep(0.1)
+        self._reload_locked_state()
         # who holds the lock, for the next `baton run` that finds it taken (the lock itself dies with us)
-        lock.seek(0)
-        lock.truncate()
-        lock.write(json.dumps({"pid": os.getpid(), "run": self.run_id,
-                               "started": timefmt.iso(self.clock.now(), self.tz)}))
-        lock.flush()
+        self._write_lock_info(lock, "running")
         self.run_is_live = True
         self.stop_file.unlink(missing_ok=True)      # left by a run that crashed
         # SIGHUP: the terminal closed (ssh dropped, no tmux). Stop like Ctrl+C, and commit the work.
         old = {s: signal.signal(s, self._signal) for s in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)}
         try:
             return self._run(tasks)
+        except RunStopped as e:
+            self.log(f"run stopped: {e}")
+            return 3
         except DiskFull as e:
             return self.disk_full_exit(e)
         except BaseException as e:
             self.notify("run_died", note=f"baton crashed: {type(e).__name__}: {e}")
             raise
         finally:
+            self._write_lock_info(lock, "cleanup")
             self.run_is_live = False
             self.notifier.wait()
             try:
-                self.restore_branches()
+                if not getattr(self, "_resume_refused", False):
+                    self.restore_branches()
             except DiskFull:
                 pass                    # the disk is still full: the repositories keep their task branches
             for s, h in old.items():
                 signal.signal(s, h)
             self.stop_file.unlink(missing_ok=True)
             lock.close()
+
+    def _write_lock_info(self, lock, phase: str) -> None:
+        if phase == "running":
+            self._control_info = {"pid": os.getpid(), "run": self.run_id, "control": "resume-v1",
+                                  "started": timefmt.iso(self.clock.now(), self.tz)}
+        self._control_info["phase"] = phase
+        try:
+            lock.seek(0)
+            lock.truncate()
+            lock.write(json.dumps(self._control_info))
+            lock.flush()
+        except OSError:
+            if phase == "running":
+                raise
+            # Metadata is advisory; failure must not skip branch cleanup or lock release.
+
+    def _reload_locked_state(self) -> None:
+        # Another owner may have saved/finished between __init__ and flock acquisition.
+        self.state = load_state(self.state_path)
+        self._expired_limits = expire_limits(self.state, self.clock.now())
+        saved = self.state.provider_status()
+        self.sched.status = {p: saved.get(p, ProviderStatus()) for p in self.sched.providers}
+
+    def _prepare_resume(self, task: Task) -> int | None:
+        from . import ops
+        if self.resume_attempt is not None and self.state.task(task.id).attempts > self.resume_attempt:
+            self._resume_refused = True
+            print(f"{task.id}: another resume already advanced the attempt; no extra replacement started", flush=True)
+            return 0
+        try:
+            ops.validate_resume(self, task)
+        except ops.OpsError as e:
+            self._resume_refused = True
+            print(f"resume refused: {e}", flush=True)
+            return 2
+        ops.prepare_resume(self, task)
+        return None
 
     def disk_full_exit(self, e: DiskFull) -> int:
         """A write failed for lack of space. Nothing more is written; run.json is as the last good save
@@ -308,7 +350,12 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         self._begin_run(ordered)
         refused = self._check_only(by_id)
         if refused is not None:
+            self._resume_refused = self.resume
             return refused
+        if self.resume:
+            refused = self._prepare_resume(by_id[self.only])
+            if refused is not None:
+                return refused
         self._log_run_start(ordered)
         decided = self._recover_previous_run(ordered)
         pending = self._pending_tasks(ordered, by_id, decided)
@@ -317,7 +364,8 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             ordered, by_id = self.dispatch(ordered, by_id, pending, seen)
         else:
             ordered, by_id = self.serial_loop(ordered, by_id, pending, seen)
-        return self._end_run(ordered, pending)
+        code = self._end_run(ordered, pending)
+        return 2 if self.resume and self.state.task(self.only).status == "failed" else code
 
     def _begin_run(self, ordered: list[Task]) -> None:
         """The first facts of a run: the task order, this baton's version, limits that expired meanwhile."""
@@ -326,7 +374,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         for line in self._expired_limits:
             self.log(f"limit expired: {line}")
         self._expired_limits = []
-        if not any(s.status in ("running", "waiting") for s in self.state.tasks.values()):
+        if not self.resume and not any(s.status in ("running", "waiting") for s in self.state.tasks.values()):
             self._forget_stale_branches()
         self.verifiers = [t for t in ordered if t.is_verifier]
 
@@ -378,7 +426,11 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         if midway:
             self.notify("run_died", note="the previous run ended without finishing (crash, kill -9 or power "
                                          "loss); tasks left mid-way: " + ", ".join(midway))
-        self.end_leftover_agents()
+        try:
+            self.end_leftover_agents()
+        except RunStopped:
+            self._resume_refused = True  # no branch cleanup while ownership/termination is uncertain
+            raise
         self.recover(ordered)
         self.state.running = {}         # live work of a run that crashed
         return self.apply_decisions()
@@ -449,7 +501,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
                     seen: set[str]) -> tuple[list[Task], dict[str, Task]]:
         """One task at a time: the loop that has always been, used when lanes = 1."""
         idle = False
-        while (pending or self.follow) and not self.stop_reason:
+        while (pending or self.follow or self.has_queued_resumes()) and not self.stop_reason:
             if self.stop_wanted():
                 break
             self.drop_decided(pending)
@@ -457,6 +509,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
                 # edits to pending tasks' dependencies count at once, not only when the queue is empty
                 ordered, by_id, new = self.reload(ordered, by_id, seen)
                 pending += [t for t in new if t not in pending]
+            self.add_queued_resumes(pending)
             ready = self.ready_tasks(pending, by_id)
             if not ready:
                 if not self.follow:
@@ -618,7 +671,10 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
                 if not (ts.status in ("running", "waiting") and ts.start_head is not None):
                     self.check_existing_branch(task)       # not for a task that continues its own branch
                 # no `branch` in the task file: baton/<id> starts from whatever is checked out now
-                msg = gitutil.checkout(task.repo, task.branch, task.base or ("HEAD" if task.branch_auto else None))
+                if ts.attempts and ts.status in ("running", "waiting") and gitutil.branch_exists(task.repo, task.branch):
+                    msg = gitutil.checkout_resume(task.repo, task.branch)
+                else:
+                    msg = gitutil.checkout(task.repo, task.branch, task.base or ("HEAD" if task.branch_auto else None))
                 if msg:
                     self.log(f"task {task.id}: {msg}")
         except gitutil.GitError as e:
@@ -639,6 +695,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             self.archive_attempts(task)
             ts.attempts = 0
         ts.last_end = ""
+        ts.stall_retries = 0
         ts.reason = ""
         ts.suspect_files = []
         self.progress_path(task).unlink(missing_ok=True)
@@ -673,6 +730,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             # a task that has not started an attempt may return to the preferred provider;
             # once it has, it stays where it is until that provider is limited
             fresh=new_start or ts.attempts == 0,
+            stall_left=max(0, 1 - ts.stall_retries),
         )
         used = self._budgets.pop(task.id, None)
         if used and not new_start:      # lanes: the task was given back to the dispatcher and is back
@@ -779,6 +837,11 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         spec, n = self._begin_attempt(task, loop, pick)
         att = self._launch(task, loop, prov, spec, n)
         now = self.clock.now()
+        if att.resumed:
+            self._preserve_resume(task, att, n)
+            oc = Outcome("interrupted", source="operator", detail="manual resume")
+            self._record_metrics(task, loop, pick, spec, n, att, oc, None)
+            return _Tried(prov, n, att, oc, None, "", now)
         status = read_status(loop.result_path, att.wall_start)
         if att.returned_to and not status:
             return self._returned(task, loop, pick, spec, n, att, now)
@@ -798,6 +861,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             raise RunStopped(explain(task, missing))
         spec = cfg.routing.spec(task.resolved_rung, prov)
         loop.fresh = False
+        ts.resume_pending = None
         ts.attempts += 1
         if not ts.providers or ts.providers[-1] != prov:
             ts.providers.append(prov)
@@ -813,9 +877,10 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         ts = self.state.task(task.id)
         result_path = loop.result_path
         agent_result = self.agent_result_path(task, prov, result_path)
+        prompt = self.build_prompt(task, prov, n, ts.last_end, agent_result)
+        self.keep_attempt_result(task, n - 1, clear_result=loop.held_status is None)
         if prov == "codex":
             self.clear_codex_files(task)
-        prompt = self.build_prompt(task, prov, n, ts.last_end, agent_result)
         self.hook_failed.pop(task.id, None)
         if loop.fixed:
             self.set_running(task, provider=prov, attempt=n,
@@ -829,6 +894,16 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             self.save()
             raise RunStopped(self.stop_reason or "stop requested")
         return att
+
+    def _preserve_resume(self, task: Task, att: Attempt, n: int) -> None:
+        ts = self.state.task(task.id)
+        self.commit_leftovers(task, "operator resume interrupted the attempt")
+        where = att.stall_note or "no meaningful output recorded"
+        ts.last_end = (f"operator resume interrupted attempt {n}; last activity: {where}. "
+                       f"Preserved HEAD {gitutil.head(task.repo)} on branch {task.branch}.")
+        ts.interruptions.append({"attempt": n, "reason": ts.last_end, "at": self.clock.now().isoformat()})
+        self.log(f"task {task.id}: {ts.last_end}")
+        self.save()
 
     def _read_outcome(self, task: Task, loop: _TaskLoop, prov: str, att: Attempt, status, now: datetime):
         """Classify what the agent printed and settle the result status. Returns (outcome, status, weak note)."""
@@ -923,6 +998,9 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
 
     def _after_attempt(self, task: Task, loop: _TaskLoop, t: _Tried) -> str:
         """Decide what the attempt means. Returns _AGAIN to try again or _DONE when the task is over."""
+        if t.att.resumed:
+            self._check_branch_unchanged(task, loop)
+            return _AGAIN
         if t.returned:
             return _AGAIN
         self._check_branch_unchanged(task, loop)
@@ -1054,14 +1132,17 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         return _AGAIN
 
     def _on_stall(self, task: Task, loop: _TaskLoop, t: _Tried) -> str:
-        """The agent printed nothing for [run] stall_minutes: it is hung (a test waiting on a service, a
-        network call). End the attempt, keep its work as WIP, and try once more in a new session."""
+        """Output inactivity exceeded the configured limit: keep WIP and retry once in a new session.
+        Silence can also be a legitimate quiet build; the watchdog is opt-in."""
         att, ts = t.att, self.state.task(task.id)
         mins = task.stall_minutes if task.stall_minutes is not None else self.cfg.stall_minutes
         where = att.stall_note or "(no output at all)"
         self.commit_leftovers(task, "the attempt stalled")
+        ts.interruptions.append({"attempt": t.n, "reason": "watchdog: no output; last activity: " + where,
+                                 "at": self.clock.now().isoformat()})
         if loop.stall_left > 0:
             loop.stall_left -= 1
+            ts.stall_retries = max(ts.stall_retries, 1)
             ts.last_end = f"the previous attempt stalled (no output for {mins:g} min) at: {where}"
             self.log(f"task {task.id}: attempt {t.n} stalled (no output for {mins:g} min; last: {where}); "
                      "continuing in a new session")

@@ -1,4 +1,4 @@
-"""Command line: baton init | run | plan | status | stop | watch | approve | reject | mark | retry | providers | review | review-fix | classify."""
+"""Command line: baton init | run | plan | status | stop | watch | approve | reject | mark | retry | resume | providers | review | review-fix | classify."""
 
 from __future__ import annotations
 
@@ -163,6 +163,9 @@ def cmd_status(args) -> int:
             print(f"  [{v.get('lane', '?')}] {tid}"
                   + (f" on {v['provider']}" if v.get("provider") else "")
                   + (f", attempt {v['attempt']}" if v.get("attempt") else ""))
+    from .watch import activity_lines
+    for line in activity_lines(cfg, active):
+        print(line)
     print_review_block(ordered, state)
     todo = ops.hints(ordered, state, active) if ordered else []
     if todo:
@@ -203,6 +206,33 @@ def cmd_retry(args) -> int:
     print(f"{args.id} cleared (it was {before}); running just this task now")
     return cmd_run(argparse.Namespace(config=args.config, only=args.id, force=args.force,
                                       provider=args.provider, follow=False))
+
+
+def cmd_resume(args) -> int:
+    from . import ops
+    from .runner import Runner
+    from .watch import lock_info, run_active
+    cfg = _cfg(args)
+    from .state import load_state
+    before = load_state(cfg.state_dir / "run.json")
+    try:
+        if run_active(cfg):
+            if (lock_info(cfg) or {}).get("phase") == "cleanup":
+                print("the owner is cleaning up branches; waiting for its lock release", flush=True)
+            else:
+                print(ops.request_resume(cfg, args.id), flush=True)
+                if (args.id not in before.agents and before.task(args.id).status in ("running", "waiting")
+                        and (lock_info(cfg) or {}).get("phase") != "cleanup"):
+                    return 0
+            if ops.wait_resume(cfg, args.id, before.task(args.id).attempts):
+                return 0
+            print("the owner released its lock; continuing through normal crash/WIP recovery", flush=True)
+        ordered = ops.load_ordered(cfg)
+        ops.find_task(ordered, args.id)
+        return Runner(cfg, only=args.id, resume=True, resume_attempt=before.task(args.id).attempts).run(ordered)
+    except ops.OpsError as e:
+        print(f"resume refused: {e}", file=sys.stderr)
+        return 2
 
 
 def cmd_providers(args) -> int:
@@ -380,6 +410,9 @@ def _add_operator_commands(sub) -> None:
     p.add_argument("--force", action="store_true", help="run it even when a verifier or checkpoint before it is open")
     p.add_argument("--provider", choices=["claude", "codex"], help="begin from this provider")
     p.set_defaults(func=cmd_retry)
+    p = _with_config(sub.add_parser("resume", help="interrupt one unfinished attempt and continue preserved work"))
+    p.add_argument("id")
+    p.set_defaults(func=cmd_resume)
     p = sub.add_parser("providers", help="provider state: `baton providers reset NAME` clears a stale limit")
     psub = p.add_subparsers(dest="providers_cmd", required=True)
     pr = _with_config(psub.add_parser("reset", help="forget a provider's limit and disabled flag"))

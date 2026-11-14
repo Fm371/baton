@@ -117,6 +117,7 @@ class LanesMixin:
             return True
         self._follow_reload(st)
         self.drop_decided(st.pending)
+        self.add_queued_resumes(st.pending)
         if not st.pending and not self.follow and not st.running:
             return False
         ready = [t for t in self.ready_tasks(st.pending, st.by_id) if t.id not in st.running]

@@ -26,7 +26,7 @@ class HandoffMixin:
                 if t.branch and gitutil.current_branch(t.repo) != t.branch:
                     self.log(f"task {t.id}: {t.repo.name} is on '{gitutil.current_branch(t.repo)}', not on "
                              f"{t.branch}; its uncommitted changes are left alone")
-                    ts.last_end = "the runner itself was interrupted (crash, reboot or stop)"
+                    ts.last_end = ts.last_end or "the runner itself was interrupted (crash, reboot or stop)"
                     continue
                 try:
                     h = gitutil.commit_all(t.repo, self.wip_message(t, "work left by an interrupted run"),
@@ -36,10 +36,10 @@ class HandoffMixin:
                     self.commit_failed[str(t.repo)] = detail
                     self.log(f"task {t.id}: ERROR could not recover the uncommitted work in {t.repo.name}, "
                              f"it stays as it is: {detail}")
-                    ts.last_end = "the runner itself was interrupted (crash, reboot or stop)"
+                    ts.last_end = ts.last_end or "the runner itself was interrupted (crash, reboot or stop)"
                     continue
                 self.log(f"task {t.id}: recovered uncommitted work as {h[:8] if h else '?'}")
-                ts.last_end = "the runner itself was interrupted (crash, reboot or stop)"
+                ts.last_end = ts.last_end or "the runner itself was interrupted (crash, reboot or stop)"
         self.save()
 
     # Codex gets one writable folder, its own task's results/<id>/, instead of the
@@ -76,8 +76,10 @@ class HandoffMixin:
                 self.log(f"task {task.id}: could not copy {name}: {e}")
 
     def previous_notes(self, task: Task) -> str:
+        paths = [self.progress_path(task), self.agent_progress_path(task, "codex")]
+        path = max((p for p in paths if p.is_file()), key=lambda p: p.stat().st_mtime, default=paths[0])
         try:
-            text = self.progress_path(task).read_text(encoding="utf-8", errors="replace").strip()
+            text = path.read_text(encoding="utf-8", errors="replace").strip()
         except OSError:
             return ""
         return text if len(text) <= self.PROGRESS_MAX else "[... earlier notes cut ...]\n" + text[-self.PROGRESS_MAX:]
@@ -299,6 +301,23 @@ class HandoffMixin:
             return
         raise gitutil.GitError(f"{'; '.join(rep.problems)}. {branches.fix_hint(rep)}")
 
+    def keep_attempt_result(self, task: Task, n: int, clear_result: bool = True) -> None:
+        """Archive reports/notes before the next attempt; an old verdict must never count as new."""
+        if n < 1:
+            return
+        folder = self.cfg.results_dir / task.id
+        folder.mkdir(parents=True, exist_ok=True)
+        for src in (self.cfg.results_dir / f"{task.id}.md", folder / self.CODEX_RESULT,
+                    folder / self.CODEX_PROGRESS, self.progress_path(task)):
+            dest = folder / f"attempt-{n:02d}.{src.name}"
+            if src.is_file() and not dest.exists():
+                shutil.copy2(src, dest)
+        notes = self.previous_notes(task)
+        if notes:
+            atomic_write(self.progress_path(task), notes)
+        if clear_result:
+            (self.cfg.results_dir / f"{task.id}.md").unlink(missing_ok=True)
+
     def archive_attempts(self, task: Task) -> None:
         """Move the attempt files of an earlier run of this task into results/<id>/earlier-N/."""
         folder = self.cfg.results_dir / task.id
@@ -392,6 +411,8 @@ class HandoffMixin:
                         "agents can read them: never commit canary or mutation descriptions or this "
                         "verification file, and name each test by the behavior it checks.")
         if attempt > 1:
+            foot.append(f"Preserved HEAD {gitutil.head(task.repo)} on branch {task.branch}; "
+                        "inspect the preserved work before repeating any commands.")
             since = self.state.task(task.id).start_head
             rng = f"{since[:12]}..HEAD" if since else "HEAD"
             foot.append(

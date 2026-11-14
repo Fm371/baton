@@ -8,7 +8,9 @@ common_prompt = "common.md"      # prepended to every task prompt (optional)
                                  # Codex prints reset times without a zone; they are read in this zone,
                                  # so setting it to anything but your machine's zone misreads them by hours
 default_base = "develop"         # branch new task branches are created from
-task_timeout_min = 240           # hard wall-clock cap per attempt (Codex has no turn cap)
+task_timeout_min = 240           # elapsed cap per attempt, excluding suspend (Codex has no turn cap)
+# stall_minutes = 20             # opt-in output inactivity watchdog; default 0/off. Retry once, then fail.
+                                # Task front matter can override it; 0 opts a quiet build out.
 max_turns = 0                    # Claude --max-turns per attempt; 0 = off (tasks can set their own)
 reset_margin_seconds = 180       # wait this long past the printed reset time
 unknown_limit_cooldown_min = 30  # a limit with no readable reset time

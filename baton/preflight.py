@@ -435,7 +435,12 @@ def _check_dirty(ctx: _Ctx, t: Task, running: set[str], seen: _Seen) -> None:
         return
     seen.repos.add(t.repo)
     # a task interrupted mid-run may leave changes; the runner commits them as WIP
-    running_here = any(x.id in running and x.repo == t.repo for x in ctx.tasks)
+    running_here = next((x for x in ctx.tasks if x.id in running and x.repo == t.repo), None)
+    if running_here and running_here.branch and gitutil.current_branch(t.repo) != running_here.branch:
+        problem = gitutil.resume_checkout_problem(t.repo, running_here.branch)
+        if problem:
+            ctx.errors.append(problem)
+        return
     if gitutil.is_dirty(t.repo) and not running_here:
         ctx.errors.append(dirty_message(ctx.cfg, t.repo))
 
