@@ -162,7 +162,6 @@ class QueueFixesTest(RunnerFixture):
         self.assertEqual(data["attribution"]["commit"], "keep")
 
     def test_retry_during_a_run_is_queued_and_the_live_run_requeues_the_task(self):
-        from baton.state import load_state, save_state
         self.add_task("a")
         cfg = self.cfg()
         _, _, tasks = preflight(cfg)
