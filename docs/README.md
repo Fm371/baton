@@ -14,9 +14,10 @@ Start with the [quick start](quickstart.md). The rest is reference: read it when
 | [safety.md](safety.md) | before the first real night: what baton enforces itself and what it leaves to the tools |
 | [lanes.md](lanes.md) | you want tasks in different repositories to run at the same time (experimental) |
 | [troubleshooting.md](troubleshooting.md) | something failed: `bwrap`, network, a suite that is "not green", a stale lock, a limit message baton cannot read |
+| [limitations.md](limitations.md) | you want to know what baton does not do yet, before you rely on it |
 | [development.md](development.md) | you change baton: tests, the fake CLIs, adding a limit-message fixture |
 | [releasing.md](releasing.md) | you cut a release: version, changelog, build, tag, what is not automated |
 | [design/](design/) | proposals that are not built: parallel lanes (built, kept as the rationale), baseline failures, fallback and budget, protected paths, resuming the same session |
 
-The project overview, the five-minute start and the known limitations are in the [README](../README.md); every
+The project overview, and the short start are in the [README](../README.md); every
 user-visible change is in the [CHANGELOG](../CHANGELOG.md).
