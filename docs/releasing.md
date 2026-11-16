@@ -1,7 +1,7 @@
 # Releasing baton
 
 baton is published from `main`. The distribution name is `baton-runner`, the command is `baton`.
-Nothing here is automatic yet: a release is a handful of commands run by a person.
+Publishing a GitHub release uploads the package to PyPI (`.github/workflows/publish.yml`); the steps before it are run by a person.
 
 ## Before you start
 
@@ -37,11 +37,12 @@ Nothing here is automatic yet: a release is a handful of commands run by a perso
    git tag -a vX.Y.Z -m "baton X.Y.Z"
    git push origin main vX.Y.Z
    ```
-6. **GitHub release.** Create a release from the tag; paste the changelog section as the notes and attach
-   `dist/*`.
-7. **PyPI** (only when you decide baton should be installable with `pip install baton-runner`):
-   `twine upload dist/*` with an API token, or set up trusted publishing for the GitHub repository and let a
-   workflow do it. Neither is configured yet.
+6. **GitHub release.** Create a release from the tag and paste the changelog section as the notes. Publishing
+   it starts `.github/workflows/publish.yml`: it checks that the tag is `v` + the `pyproject.toml` version,
+   builds and checks the sdist and wheel, installs the wheel, and uploads to PyPI through Trusted Publishing
+   (no API token). The job runs in the `pypi` environment; the PyPI side is configured once for project
+   `baton-runner`, owner `Fm371`, repository `baton`, workflow `publish.yml`, environment `pypi`.
+7. **Check.** `pipx install baton-runner==X.Y.Z` in a clean shell, then `baton --version`.
 
 ## License
 
@@ -52,7 +53,6 @@ organisation there. The build needs setuptools 77 or newer for the SPDX `license
 
 ## What is not done
 
-- Nothing has been published: no tag, no GitHub release, no PyPI upload, no trusted-publishing workflow.
 - CI cannot prove anything about the real `claude` / `codex` CLIs (fake CLIs only); there is no scheduled job
   that runs them.
 - Only Linux is supported and tested; macOS is untested.
