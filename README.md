@@ -1,92 +1,91 @@
 # baton
 
-Run a folder of coding-agent tasks overnight, unattended. When Claude Code hits its usage limit the work
-continues on Codex, and the other way round. You write tasks as Markdown files; baton runs them one by one on
-their own git branches, hands a half-done task to the other tool with notes, sleeps until a limit resets,
-and leaves you a summary in the morning. It never pushes and never merges: you review the branches.
+**An unattended task runner for Claude Code and Codex. Queue coding-agent tasks as Markdown files, go to
+sleep, review git branches in the morning.**
 
-```
-task-auto/                 your workspace (keep it outside the repositories it works on)
-├── baton.toml             providers, routing table, limits
-├── common.md              rules prepended to every task prompt
-├── tasks/                 one Markdown file per task
-└── results/  state/  logs/   what baton writes: SUMMARY.md, run.json, run.log
-```
+[![CI](https://github.com/fm371/baton/actions/workflows/ci.yml/badge.svg)](https://github.com/fm371/baton/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
 
-**Status:** version 0.4.0, pre-1.0, MIT licensed, used on a few real projects. It is tested against fake
-`claude` and `codex` programs; how the real tools behave is verified only by those real runs (see
-[Known limitations](#known-limitations)). Behaviour changes since 0.3.0 are listed in the
-[CHANGELOG](CHANGELOG.md): unknown keys in `baton.toml` are now an error, a task without `branch` works on
-`baton/<id>`, and `return_mid_task` is off by default.
+When one tool hits its usage limit, baton passes the task to the other one with the previous agent's notes,
+or sleeps until the limit resets. Each task gets its own git branch. baton never pushes and never merges:
+you decide what lands.
 
-## Why
+This is what you find in `results/SUMMARY.md` after a night (shortened example):
 
-A long agent task fails in boring ways: the usage limit hits at 2 a.m., a half-finished change is left
-uncommitted, a green test suite proves the wrong feature, a verifier is told how the code was written. baton
-exists to handle these without you: it reads the limit message, waits for the real reset time or moves the
-task to the other tool (same model tier, with the previous agent's notes), commits whatever was left as a WIP
-commit, gates tasks behind independent verifiers, and stops cleanly when you tell it to.
+| task | repo | status | commits | attempts | providers | note |
+|---|---|---|---|---|---|---|
+| 05-schema | api | done | 2 | 1 | codex | - |
+| 10-widgets | api | done | 4 | 2 | codex -> claude | - |
+| 15-check-widgets (verify) | api | done | 1 | 1 | claude | - |
+| 20-export | api | partial | 3 | 1 | claude | the export tests need a database that is not running |
 
-## Install
+Task `10-widgets` started on Codex, Codex ran out of quota, and Claude Code finished it.
 
-Python 3.11+, no runtime dependencies. The package is `baton-runner`; the command is `baton`.
+## Why baton
 
-```bash
-git clone https://github.com/fm371/baton ~/tools/baton
-pipx install ~/tools/baton          # or: pip install --user ~/tools/baton
-baton --version
-```
+Long agent runs fail in boring ways. baton handles each of them without you:
 
-You also need `git` and the tools it drives, installed and logged in: `claude` (Claude Code) and, for the
-switch, `codex`. With only one of them, set `enabled = false` on the other provider.
-
-## Five-minute start
-
-```bash
-baton init ~/work/task-auto         # a workspace from the template
-cd ~/work/task-auto
-cp claude-settings.example.json claude-settings.json   # the rules that limit the Claude agent: read them
-$EDITOR baton.toml                  # default_base = "main"; check the model names
-$EDITOR tasks/10-example.md         # point repo = "..." at a clean git repository
-baton plan                          # checks everything, shows the order and models, creates nothing
-baton run                           # runs every unfinished task
-baton status                        # the summary, and what to do next
-```
-
-The full walk-through, with a throwaway repository and a real task, is in
-[docs/quickstart.md](docs/quickstart.md).
-
-## The commands you use
-
-| command | what it does |
+| what goes wrong at 2 a.m. | what baton does |
 |---|---|
-| `baton plan` | preflight: checks the tools, repositories, branches, models, sandbox and config; prints the order and the model each task would use; runs nothing |
-| `baton run` | runs every unfinished task (`--follow` keeps going and picks up new task files and approvals; `--only ID` runs one task) |
-| `baton status` / `baton watch` | the summary table and what to do next / a live view of the current agent's output |
-| `baton resume ID` | replace an unfinished/stalled attempt with a fresh session using preserved work and notes, including with a live runner |
-| `baton stop` | from another terminal: finish the current task, then end cleanly |
-| `baton approve ID` / `baton reject ID` | decide a human checkpoint |
-| `baton mark ID done` / `baton retry ID` | fix up a stuck task by hand instead of editing the state |
-| `baton review --only ID` / `baton review-fix --only ID` | optional: a read-only review of a done task by the other provider, then one round of fixes for its blockers (only when you run them) |
+| The usage limit hits | Reads the limit message, moves the task to the other tool on the same model tier, or sleeps until the real reset time |
+| A half-finished change is left uncommitted | Commits it as a WIP commit (never a stash) and hands the next agent the notes |
+| The tests are green but prove the wrong thing | Runs an independent verifier that never sees how the code was written, and holds back the tasks that depend on it |
+| One task breaks and takes the night with it | Marks that task failed or blocked, carries on with the rest, and tells you why in the summary |
 
-If an attempt goes quiet, `baton status` and `baton watch` show its last-output time, inactivity and
-last meaningful activity. `baton resume ID` asks its owner to end that attempt's process group, preserve
-WIP and start one replacement. After a stop or crash it takes the normal run lock and continues the saved
-task branch. Approvals and verifier gates still apply; provider conversation and in-flight commands are
-not restored. See the [recovery journey](docs/operations.md#resuming-an-unfinished-attempt).
+## Quick start
 
-The existing output watchdog is **off by default**: opt in with `[run] stall_minutes = 20`, override it
-per task, or use `stall_minutes = 0` to opt a task out. Quiet builds can be legitimate.
+You need Python 3.11+, `git`, and `claude` (Claude Code) and/or `codex`, installed and logged in.
+baton itself has no dependencies.
 
-Everything else (`providers reset`, `classify`, exit codes, the night checklist) is in
-[docs/operations.md](docs/operations.md).
+**1. Install**
 
-## A task
+```bash
+pipx install git+https://github.com/fm371/baton     # the command is `baton`
+```
+
+**2. Create a workspace and a throwaway repository to try it on**
+
+```bash
+baton init ~/work/baton-demo && cd ~/work/baton-demo
+cp claude-settings.example.json claude-settings.json     # what the Claude agent may run: read it
+sed -i 's/default_base = "develop"/default_base = "main"/' baton.toml
+
+git init -b main ../toy && git -C ../toy commit --allow-empty -m init
+
+rm tasks/10-example.md
+cat > tasks/10-hello.md <<'EOF'
++++
+repo = "../toy"
+work_type = "docs"
++++
+## Goal
+Create HELLO.md at the repository root with one line: `hello from baton`.
+
+## Acceptance
+- HELLO.md exists, contains exactly that line, and the change is committed.
+EOF
+```
+
+**3. Check, then run**
+
+```bash
+baton plan       # checks tools, repositories and config; shows the order; changes nothing
+baton run        # runs every unfinished task
+baton status     # the summary, and what to do next
+```
+
+The work is on the branch `baton/10-hello` in `../toy`, waiting for your review. If you have only one of the
+two tools, set `enabled = false` on the other provider in `baton.toml`. The step-by-step version, with
+explanations, is in [docs/quickstart.md](docs/quickstart.md).
+
+## A task is a Markdown file
 
 ```markdown
 +++
 repo = "../my-repo"           # relative to baton.toml, or absolute
-work_type = "crud"            # a row of the routing table: decides the model on each tool
+work_type = "crud"            # picks the model on each tool, from a table in baton.toml
 depends_on = ["05-schema"]    # optional
 +++
 ## Goal
@@ -96,41 +95,58 @@ Add the widgets list endpoint.
 - GET /widgets returns the user's widgets, newest first; tests cover empty and paged results.
 ```
 
-The agent works on the branch `baton/<task id>`, writes `results/<id>.md` (first line
-`STATUS: done|partial|blocked`), and baton decides the final status from that line and the commits.
+The agent works on the branch `baton/<task id>` and writes `results/<id>.md`, whose first line is
+`STATUS: done|partial|blocked`. baton decides the final status from that line and the commits.
+Everything a task header can hold is in [docs/tasks.md](docs/tasks.md).
 
-## Optional: a second opinion on a finished task
+## How it works
 
-Add `review = true` to a task header, then, after the run, ask the **other** provider for a read-only review
-and, if it found blockers, for one round of fixes by the provider that wrote the code:
-
-```bash
-baton review --pending               # every done task with review = true that has no review yet
-baton review --only 10-widgets       # any done task, even without review = true
-baton review-fix --only 10-widgets   # one round; addresses the [blocker] findings only
-```
-
-The review is saved as `reviews/<id>.md` (first line `VERDICT: approve|changes|reject`, findings tagged
-`[blocker]`, `[should]` or `[nit]`). Neither command ever runs from `baton run`, a review never gates other tasks,
-and the reviewer cannot change your repository (baton checks the tree before and after and discards the review if
-anything moved). Details: [docs/operations.md](docs/operations.md), [docs/safety.md](docs/safety.md).
-
-## The switching rule, in four lines
+**Switching between tools.**
 
 1. Start on `start_provider` (Codex by default) and stay on it until it is limited.
-2. When it is limited, continue on the other one; the next new task goes back to the first as soon as it is
+2. When it is limited, continue on the other one. The next new task goes back to the first as soon as it is
    available again.
 3. When both are limited, sleep until the earliest reset.
-4. A task that changes tool keeps its model tier, gets the previous agent's notes, and whatever was left
-   uncommitted is committed as a WIP commit (never stashed).
+4. A task that changes tool keeps its model tier and gets the previous agent's notes.
 
-## What baton does not do
+**Independent verifiers.** A verifier is a task in `verifiers/` with `kind = "verify"`. It runs in a fresh
+session, cannot read the implementer's task or result files, and may only add or change tests. Until it
+finishes `done`, every task that depends on it is held back. The implementer never sees the verifier's
+text. See [docs/verifiers.md](docs/verifiers.md).
 
-It does not push, merge, reset, clean or stash. It does not commit on your current branch, and it puts every
-repository back where it was when the run ends. It never runs `git fetch`: update your base branch first.
-**It does not sandbox the agent**: the agent is limited only by the allow/deny rules in your
-`claude-settings.json` and by Codex's own sandbox, and runs unattended with your user's rights. Read
-[docs/safety.md](docs/safety.md) before the first real night; run baton as a separate user or in a container.
+**Human checkpoints and second opinions.** A task can wait for `baton approve ID`, and `baton review` asks
+the other tool for a read-only review of a finished task. See [docs/tasks.md](docs/tasks.md) and
+[docs/operations.md](docs/operations.md).
+
+## Commands
+
+| command | what it does |
+|---|---|
+| `baton init` | create a workspace from the template |
+| `baton plan` | preflight: check everything, print the order and models, run nothing |
+| `baton run` | run every unfinished task (`--only ID` for one, `--follow` to keep picking up new tasks) |
+| `baton status` / `baton watch` | the summary table / a live view of the current agent's output |
+| `baton stop` | from another terminal: finish the current task, then end cleanly |
+| `baton resume ID` | replace a stalled or unfinished attempt with a fresh session that keeps the work and notes |
+
+The rest (`approve`, `reject`, `mark`, `retry`, `review`, `review-fix`, exit codes, the night checklist) is in
+[docs/operations.md](docs/operations.md).
+
+## Safety: read this before a real night
+
+baton does not push, merge, reset, clean or stash. It does not commit on your current branch, and it puts
+every repository back where it was when the run ends. It never runs `git fetch`: update your base branch
+first.
+
+**baton does not sandbox the agent.** The agent runs unattended with your user's rights, limited only by the
+allow/deny rules in your `claude-settings.json` and by Codex's own sandbox. Run baton as a separate user or
+in a container, and read [docs/safety.md](docs/safety.md) first.
+
+## Is it for you?
+
+It fits when you have a list of well-specified tasks, a subscription to Claude Code, Codex or both, and you
+would rather review branches than babysit a terminal. It does not fit interactive pair programming, vague
+tasks that need a conversation, or Windows.
 
 ## Documentation
 
@@ -146,42 +162,23 @@ repository back where it was when the run ends. It never runs `git fetch`: updat
 | [docs/safety.md](docs/safety.md) | what is enforced and what is not |
 | [docs/lanes.md](docs/lanes.md) | parallel tasks (experimental) |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | the messages you will meet and what to do |
-| [docs/development.md](docs/development.md) | running the tests, how the fakes work |
-| [docs/design/](docs/design/) | proposals not built yet |
+| [docs/limitations.md](docs/limitations.md) | everything baton does not do yet |
 
-## Known limitations
+## Status and known limitations
 
-- **Real-tool behaviour is only partly verified.** The tests use fake CLIs. Real runs have shown the
-  switching, WIP commits and handoff work; what only fake runs have exercised is `lanes > 1`,
-  `return_mid_task`, the sandbox and network probes for Codex, and the newest limit-message parsing. Run a
-  low-risk night before trusting them.
-- **The reviewer's read-only guarantee is only checked with fakes.** `baton review` denies writes through
-  Claude's settings and Codex's read-only sandbox, and compares the repository before and after; a command
-  that an interpreter hides from the deny rules is caught only by that comparison, and a content change to an
-  untracked file that keeps its size and time is not seen.
-- **Agents are limited only by the tool's settings or sandbox** ([docs/safety.md](docs/safety.md)). `results/`
-  is writable by every agent, so a task can in principle read or overwrite another task's result files.
-- **A limit message baton cannot read** is handled with a cooldown and a `no limit pattern matched` warning,
-  not a reset time. Send the saved output (`state/fixtures/`) so it can be added to `tests/fixtures/limits/`.
-- **Pre-existing test failures are not tracked per task.** Only `repo-suite` has a baseline, so an unrelated
-  failing test can make later tasks report `partial`. A design for a per-task baseline is in
-  [docs/design/baseline-failures.md](docs/design/baseline-failures.md); it is not built.
-- **Not built, design only:** resuming the same agent session after a reset
-  ([docs/design/resume-same-session.md](docs/design/resume-same-session.md); every resume is a fresh session
-  with the previous agent's notes), a per-run budget and fallback policy, protected paths per repository,
-  and two tasks in the same repository at once. Proactive wrap-up before a limit and escalation to a higher
-  rung do not exist either.
-- **Logs and raw agent output are never rotated** ([docs/operations.md](docs/operations.md#housekeeping)).
-  A very large `.out` file is read from its tail, but still sits on disk until you prune it.
-- **One run per folder.** A second `baton run` in the same workspace refuses to start.
-- **Linux is the tested platform.** macOS should work (baton uses POSIX calls only) but is untested;
-  Windows is unsupported.
+Version 0.4.0, pre-1.0, in continuous use on real projects with the real `claude` and `codex` tools.
+Changes are in the [CHANGELOG](CHANGELOG.md).
+
+- **No sandbox of its own** (see [Safety](#safety-read-this-before-a-real-night)).
+- **Linux is the tested platform.** macOS should work but is untested. Windows is unsupported.
+- **One run per workspace.** A second `baton run` in the same folder refuses to start.
+- **Parallel lanes and `return_mid_task` are experimental.** Try them on a low-risk night first.
+
+The full list is in [docs/limitations.md](docs/limitations.md).
 
 ## Contributing
 
-Tests are plain `unittest` with fake `claude` and `codex` programs; see
-[docs/development.md](docs/development.md) and [CONTRIBUTING.md](CONTRIBUTING.md). CI runs the linter, the
-tests and a size/complexity budget (`tools/quality_budget.py`): no function may exceed complexity 15 or 80
-lines, and the committed baseline is empty. When a real run shows an output baton did not expect, add it as a
-fixture with a test. Releases: [docs/releasing.md](docs/releasing.md). Security: [SECURITY.md](SECURITY.md).
-The whole documentation is indexed in [docs/README.md](docs/README.md).
+The tests are plain `unittest` with no dependencies: `python3 -m unittest discover -s tests -t .` See [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/development.md](docs/development.md). When a real run shows an output baton did not expect, please
+send it as a fixture with a test. Security reports: [SECURITY.md](SECURITY.md). Releases:
+[docs/releasing.md](docs/releasing.md). MIT licensed.
