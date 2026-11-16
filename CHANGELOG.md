@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 — not yet released
+## 0.4.0 (2026-11-16)
 
 ### Fixes from the field report (25 issues seen on a real workspace)
 
