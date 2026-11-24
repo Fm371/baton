@@ -13,14 +13,15 @@ Sections: [`[run]`](#run) · [`[providers.*]`](#providers) · [`[routing]`](#rou
 Most changes need a restart of the run (`baton stop`, edit, `baton run`): baton reads `baton.toml` when it
 starts. The exceptions are read again before each new attempt of a task: the routing table, timeouts and retry
 limits, `verifier_test_paths`, and each provider's `extra_args`, `env`, `settings`, `permission_mode`,
-`effort_flag`, `add_dirs`, `sandbox`, `profile` (what changed is logged). A provider's `bin` or `enabled`, the
-folders and `lanes` need the run to be started again.
+`effort_flag`, `add_dirs`, `sandbox`, `profile` (what changed is logged). Changes to account names, `type`,
+`home`, `bin`, `enabled`, provider order, the folders and `lanes` take effect when the run starts again.
 
 ## [run]
 
 | key | type | default | meaning |
 |---|---|---|---|
-| `start_provider` | string | `"codex"` when enabled, else the first enabled provider | provider a run begins on |
+| `start_provider` | string | first enabled name in `provider_order`, otherwise `"codex"` when enabled, otherwise the first enabled provider | account a run begins on |
+| `provider_order` | list of account names | `[]` | priority order after `start_provider`. Enabled accounts omitted from the list are appended, with the built-in names before named accounts |
 | `default_base` | string | none | branch new task branches are created from (a task's `base` overrides it); baton never fetches, so it must exist locally |
 | `timezone` | string (IANA name) | this machine's zone | zone for reset times printed without one (Codex). Leave it out unless you know the CLI prints another zone: a zone that is not your machine's misreads resets by hours, and `baton plan` warns |
 | `task_timeout_min` | number > 0 | `240` | elapsed-time cap per attempt, minutes; monotonic, excluding suspend/long observation gaps (see operations) |
@@ -46,7 +47,7 @@ folders and `lanes` need the run to be started again.
 | `restore_branches` | bool | `true` | at the end of a run put each repository back on the branch it was on before baton touched it; `false` leaves it on the last task branch (useful when you test a task's branch while the run is going) |
 | `allow_codex_verifiers` | bool | `false` | accept `codex` in `verifier_providers` / a verifier's `providers`. Codex cannot hide files from the agent, so the verifier may see implementer output; `baton plan` warns instead of refusing, and the test-path check still runs |
 | `hardcoded_key_check` | bool | `true` | flag new string literals that look like data keys, once per task |
-| `return_to_start_provider` | bool | `true` | return to `start_provider` for the next new task once it is available |
+| `return_to_start_provider` | bool | `true` | for a new task, return to an available higher-priority account the task may use |
 | `return_mid_task` | bool | `false` | **experimental**: stop an attempt on the other provider once `start_provider` resets (known reset time) and hand the task back; not with `lanes > 1`; a task can set its own |
 | `return_check_seconds` | number > 0 | `60` | how often a running attempt checks for that reset |
 | `verifiers_last` | bool | `false` | verifiers that **no task depends on** run after every other task; a verifier somebody lists in `depends_on` stays a real gate |
@@ -57,7 +58,7 @@ folders and `lanes` need the run to be started again.
 | `min_version` | string | unset | `baton plan` warns when the installed baton is older than this (a run records the version it used in `run.json` and on the first line of `SUMMARY.md`) |
 | `min_free_mb` | number ≥ 0 | `500` | `plan` and `run` warn when the folder holding `results/` has less free space than this (0 = off) |
 | `stall_minutes` | number ≥ 0 | `0` (off) | end an attempt whose stdout and stderr have not grown for this long, keep WIP and retry once; a second stall fails (budget survives restart). A task can override or use `0` to opt out; possible suspend gaps grant a fresh interval, see operations |
-| `max_limit_cycles` | whole number ≥ 1 | `6` | a task fails after this many usage-limit outcomes in a row that changed nothing in its repository (a message misread as a limit, or a limit that never lifts) |
+| `max_limit_cycles` | whole number ≥ 1 | `6` | a task fails after this many consecutive usage-limit outcomes with no repository changes, once there is no available account it has yet to try |
 | `wip_secret_patterns` | list of globs | `.env`, `.env.*` (not `.env.example`/`.sample`/`.template`/`.dist`), `*.pem`, `*.p12`, `*.pfx`, `*.keystore`, `id_rsa*`, `id_ed25519*`, `id_ecdsa*`, `id_dsa*`, `.pypirc`, plus any file that starts like a private key | file names a WIP commit **never** takes (untracked ones go to `.git/info/exclude`); `[]` switches the tier off |
 | `wip_warn_patterns` | list of globs | `*.key`, `credentials*`, `secrets.*`, `.npmrc`, `*.token`, `*.secret`, `service-account*.json`, `.netrc`, `.htpasswd` | file names a WIP commit takes but **reports loudly** (log, task note, `## Warnings` in `SUMMARY.md`); `[]` switches the tier off. A glob with a `/` is matched against the whole path from the repository's top folder; case is ignored |
 | `env_limited_action` | `"note"`, `"retry_other_provider"` | `"note"` | what to do with a `partial`/`blocked` result caused by a sandbox limit: only label it, or give the task one more attempt on the other provider (never with `lanes > 1`) |
@@ -68,11 +69,15 @@ folders and `lanes` need the run to be started again.
 
 ## [providers.*]
 
-`[providers.claude]` and `[providers.codex]`; at least one must exist.
+Keep using `[providers.claude]` and `[providers.codex]` for their usual CLI logins. Define additional
+accounts under `[providers.<name>]` with `type = "claude"` or `type = "codex"` and a separate CLI home per
+account. Account names use ASCII letters, digits, hyphens and underscores and must begin with a letter or digit.
+Each name has its own usage-limit state and concurrency slots.
 
 | key | for | type | default | meaning |
 |---|---|---|---|---|
-| `bin` | both | string | the provider name | the executable; a relative path with a slash is relative to `baton.toml`. Point it at a wrapper to run the tool in a container |
+| `type` | both | `"claude"` or `"codex"` | inferred for `[providers.claude]` and `[providers.codex]` | CLI used by a named account |
+| `bin` | both | string | the CLI name | the executable; a relative path with a slash is relative to `baton.toml`. Point it at a wrapper to run the tool in a container |
 | `enabled` | both | bool | `true` | `false` leaves the provider out of the run |
 | `extra_args` | both | list of strings | `[]` | extra command-line arguments |
 | `env` | both | table of strings | `{}` | environment variables set for the agent (also count for `required_env`) |
@@ -84,10 +89,48 @@ folders and `lanes` need the run to be started again.
 | `effort_flag` | Claude | bool | `true` | set `false` if your Claude Code has no `--effort` flag |
 | `sandbox` | Codex | string | `"workspace-write"` | Codex's `--sandbox`; `""` when a wrapper provides its own |
 | `profile` | Codex | string | none | a `[profiles.<name>]` block in `~/.codex/config.toml` |
-| `home` | Codex/Claude | path | the tool's default | where the CLI keeps its session files (used by the limit fallback) |
+| `home` | Codex/Claude | path | the tool's default for built-in providers | for a named account, its CLI home, also accepted as `env.CODEX_HOME` or `env.CLAUDE_CONFIG_DIR`. For the built-in providers, `home` controls where Baton looks for session files |
 | `known_models` | Codex | list of strings | `[]` (read Codex's own `models_cache.json`) | model ids `baton plan` accepts |
 | `sandbox_probe` | Codex | list of strings | the built-in probe | arguments (after the binary) that probe whether the sandbox starts; `[]` turns the probe off |
 | `network` | Codex | bool | `false` | let commands inside the `workspace-write` sandbox use the network (adds `-c sandbox_workspace_write.network_access=true`); it opens the whole internet, not only localhost |
+
+### Codex Business, then Personal
+
+Merge these settings into your existing `baton.toml`. Keep your existing Claude provider section and
+append any other enabled accounts to `provider_order` to set their priority explicitly.
+If `[providers.codex]` already signs in to one of these workspaces, set `enabled = false` in that
+section so Baton tries each workspace once.
+
+```toml
+[run]
+start_provider = "codex-business"
+provider_order = ["codex-business", "codex-personal"]
+
+[providers.codex-business]
+type = "codex"
+home = "~/.codex-business"
+
+[providers.codex-personal]
+type = "codex"
+home = "~/.codex-personal"
+```
+
+Create each directory and sign in from a terminal. Choose Business in the first browser sign-in and
+Personal in the second. A named Claude account uses the corresponding `CLAUDE_CONFIG_DIR` for its CLI.
+
+```bash
+mkdir -p -m 700 "$HOME/.codex-business" "$HOME/.codex-personal"
+CODEX_HOME="$HOME/.codex-business" codex login
+CODEX_HOME="$HOME/.codex-personal" codex login
+```
+
+Run `baton plan` to check the routing, then `baton run`. When the Business CLI reports a usage limit,
+Baton records that account's reset time and continues the task on the next available account. Once
+Business is available again, new tasks prefer it. `baton run --provider codex-personal` puts Personal
+first for one run. `baton providers reset codex-personal` clears the limit recorded for that account.
+
+In task front matter and `run.verifier_providers`, `"codex"` and `"claude"` select all accounts of that
+CLI type. Use a named account such as `providers = ["codex-business"]` to pin a task to it.
 
 ## [routing]
 
@@ -106,7 +149,7 @@ crud = "r3"
 
 | key | meaning |
 |---|---|
-| `[routing.rungs.<rung>.<provider>]` | `model` (required) and `effort` (optional string) for that rung on that provider |
+| `[routing.rungs.<rung>.<provider>]` | `model` (required) and `effort` (optional string). A named account uses the model for its CLI type unless the rung defines a model under its account name |
 | `[routing.work_types]` | `<work type> = "<rung>"`; the rung must exist |
 
 At least one rung is required. A task names `work_type = "..."` or `rung = "..."` in its front matter.

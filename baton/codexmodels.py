@@ -45,8 +45,8 @@ def installed_models(home: Path | None) -> set[str] | None:
     return found or None
 
 
-def known_models(cfg: Config) -> set[str] | None:
-    pc = cfg.providers.get("codex")
+def known_models(cfg: Config, name: str = "codex") -> set[str] | None:
+    pc = cfg.providers.get(name)
     if pc is None:
         return None
     if pc.known_models:
@@ -54,18 +54,18 @@ def known_models(cfg: Config) -> set[str] | None:
     return installed_models(home_dir(pc))
 
 
-def check(cfg: Config, rungs: set[str]) -> tuple[list[str], list[str]]:
+def check(cfg: Config, rungs: set[str], name: str = "codex") -> tuple[list[str], list[str]]:
     """(errors, warnings) for the Codex model ids of the given rungs."""
-    known = known_models(cfg)
+    known = known_models(cfg, name)
     if known is None:
-        return [], ["codex: cannot check model ids (no models_cache.json in the Codex home); "
-                    "list them in providers.codex.known_models to have them checked"]
+        return [], [f"{name}: cannot check model ids (no models_cache.json in the Codex home); "
+                    f"list them in providers.{name}.known_models to have them checked"]
     errors = []
     for rung in sorted(rungs):
-        spec = cfg.routing.spec(rung, "codex")
+        spec = cfg.spec(rung, name)
         if spec is None or spec.model in known:
             continue
         near = difflib.get_close_matches(spec.model, sorted(known), n=3)
-        errors.append(f"rung {rung}: codex model '{spec.model}' is not known to the installed codex"
+        errors.append(f"rung {rung}: {name} model '{spec.model}' is not known to the installed codex"
                       + (f" (did you mean {', '.join(near)}?)" if near else f" (known: {', '.join(sorted(known))})"))
     return errors, []

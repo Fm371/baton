@@ -50,7 +50,7 @@ class HandoffMixin:
     PROGRESS_MAX = 12_000           # characters of the previous agent's notes put in a prompt
 
     def agent_result_path(self, task: Task, prov: str, result_path: Path) -> Path:
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             return self.cfg.results_dir / task.id / self.CODEX_RESULT
         return result_path
 
@@ -59,7 +59,7 @@ class HandoffMixin:
         return self.cfg.results_dir / f"{task.id}.progress.md"
 
     def agent_progress_path(self, task: Task, prov: str) -> Path:
-        return self.cfg.results_dir / task.id / self.CODEX_PROGRESS if prov == "codex" else self.progress_path(task)
+        return self.cfg.results_dir / task.id / self.CODEX_PROGRESS if self.cfg.provider_kind(prov) == "codex" else self.progress_path(task)
 
     def clear_codex_files(self, task: Task) -> None:
         for name in (self.CODEX_RESULT, self.CODEX_PROGRESS):
@@ -400,7 +400,7 @@ class HandoffMixin:
         svc_line = services.prompt_line(self.cfg, services.needed(self.cfg, task))
         if svc_line:
             foot.append(svc_line)
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             foot.append("Do not run `git commit`: the Codex sandbox mounts `.git` read-only, so baton will "
                         "commit your changes after you exit. Add a line `COMMIT: <conventional commit message>` "
                         "to the result file so baton can use that message.")

@@ -177,6 +177,6 @@ def path_warnings(cfg: Config, tasks: list) -> list[str]:
     warnings += _task_text_warnings(tasks)
     repos = [t.repo for t in tasks if getattr(t, "repo", None)]
     for name, pc in cfg.providers.items():
-        if name == "claude" and pc.enabled and pc.settings and os.path.isfile(pc.settings):
+        if pc.kind == "claude" and pc.enabled and pc.settings and os.path.isfile(pc.settings):
             warnings += settings_warnings(cfg, pc.settings, f"{name}", repos)
     return warnings

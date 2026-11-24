@@ -287,7 +287,7 @@ class ProcessMixin:
 
     def _launch_setup(self, task: Task, prov: str, stem: Path, d: Path) -> dict:
         pc = self.cfg.providers[prov]
-        name = self._LAUNCH_SETUP.get(prov)
+        name = self._LAUNCH_SETUP.get(pc.kind)
         setup = getattr(self, name)(task, pc, stem, d) if name else {}
         return {"settings": None, "add_dirs": None, "max_turns": None, **setup}
 
@@ -370,7 +370,7 @@ class ProcessMixin:
         out_path, err_path = Path(f"{stem}.out"), Path(f"{stem}.err")
         setup = self._launch_setup(task, prov, stem, d)
         pc = self.cfg.providers[prov]
-        if prov == "codex" and task.sandbox:
+        if pc.kind == "codex" and task.sandbox:
             pc = dataclasses.replace(pc, sandbox=task.sandbox)       # this task's own sandbox mode
         argv, extra_env = build_command(pc, spec, setup["max_turns"],
                                         settings=setup["settings"], add_dirs=setup["add_dirs"])

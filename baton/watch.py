@@ -16,10 +16,10 @@ import time
 from pathlib import Path
 from typing import Callable, TextIO
 
-from .config import Config
+from .config import PROVIDER_NAME, Config
 from .state import load_state
 
-ATTEMPT_RE = re.compile(r"^attempt-(\d+)\.(claude|codex)\.out$")
+ATTEMPT_RE = re.compile(rf"^attempt-(\d+)\.({PROVIDER_NAME.pattern})\.out$")
 MAX_LINE = 300
 
 

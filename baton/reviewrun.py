@@ -70,7 +70,7 @@ def provider_problem(runner, task: Task, prov: str) -> str | None:
     cfg = runner.cfg
     if prov not in cfg.enabled_providers():
         return f"{prov} is not enabled in baton.toml"
-    if cfg.routing.spec(task.resolved_rung, prov) is None:
+    if cfg.spec(task.resolved_rung, prov) is None:
         return f"{prov} has no model for rung {task.resolved_rung} in [routing.rungs]"
     if not resolve_bin(cfg.providers[prov]):
         return f"{prov}: '{cfg.providers[prov].bin}' not found or not executable"
@@ -170,7 +170,7 @@ Then one finding per line, each starting with a tag, a `path:line`, a dash and t
 def build_review_prompt(cfg: Config, task: Task, implementer: str, reviewer: str, result_text: str,
                         rng: str, stat: str, diff: str, target: Path) -> str:
     write_note = (f"The only file you may write is {target} (put the same text there, and also in your final "
-                  "message)." if reviewer == "claude" else "You cannot write files; baton saves your final message.")
+                  "message)." if cfg.provider_kind(reviewer) == "claude" else "You cannot write files; baton saves your final message.")
     return f"""You are reviewing work that another AI agent ({implementer or 'unknown provider'}) finished. You are \
 {reviewer}; the point of this review is an independent second opinion.
 
@@ -243,9 +243,8 @@ def write_denies(cfg: Config, task: Task) -> list[str]:
     return rules
 
 
-def claude_reviewer_command(runner, task: Task, spec, stem: Path, target: Path) -> tuple[list[str], dict]:
+def claude_reviewer_command(runner, task: Task, pc, spec, stem: Path, target: Path) -> tuple[list[str], dict]:
     cfg = runner.cfg
-    pc = cfg.providers["claude"]
     if pc.permission_mode in ("bypassPermissions",):
         pc = dataclasses.replace(pc, permission_mode="default")      # deny rules must stay in force
     hidden = hidden_paths(cfg, task, runner.verifiers)
@@ -260,21 +259,21 @@ def claude_reviewer_command(runner, task: Task, spec, stem: Path, target: Path) 
     return build_command(pc, spec, cfg.max_turns or None, settings=str(settings), add_dirs=add_dirs)
 
 
-def codex_reviewer_command(runner, task: Task, spec) -> tuple[list[str], dict]:
-    pc = runner.cfg.providers["codex"]
+def codex_reviewer_command(pc, spec) -> tuple[list[str], dict]:
     clash = [a for a in pc.extra_args if a in UNSAFE_CODEX_ARGS]
     if clash:
-        raise ReviewBlocked(f"providers.codex.extra_args has {', '.join(clash)}, which changes the sandbox; "
+        raise ReviewBlocked(f"providers.{pc.name}.extra_args has {', '.join(clash)}, which changes the sandbox; "
                             "the reviewer must run with --sandbox read-only. Remove it for reviews.")
     pc = dataclasses.replace(pc, sandbox="read-only", add_dirs=[], network=False)
     return build_command(pc, spec, None)
 
 
 def reviewer_command(runner, task: Task, prov: str, stem: Path, target: Path) -> tuple[list[str], dict]:
-    spec = runner.cfg.routing.spec(task.resolved_rung, prov)
-    if prov == "claude":
-        return claude_reviewer_command(runner, task, spec, stem, target)
-    return codex_reviewer_command(runner, task, spec)
+    spec = runner.cfg.spec(task.resolved_rung, prov)
+    pc = runner.cfg.providers[prov]
+    if pc.kind == "claude":
+        return claude_reviewer_command(runner, task, pc, spec, stem, target)
+    return codex_reviewer_command(pc, spec)
 
 
 # ---------------------------------------------------------------- reading what came back
@@ -339,7 +338,7 @@ def archive_previous(cfg: Config, target: Path) -> None:
 def check_limit(runner, task: Task, prov: str, run: AgentRun) -> None:
     """A reviewer that hit its usage limit or an auth error is a blocked review, not a verdict."""
     cfg = runner.cfg
-    oc = classify(prov, read_output(run.out_path), read_output(run.err_path), run.code, runner.clock.now(),
+    oc = classify(cfg.provider_kind(prov), read_output(run.out_path), read_output(run.err_path), run.code, runner.clock.now(),
                   runner.tz, home_dir(cfg.providers[prov]), None)
     if oc.kind == "limit":
         until, _ = runner.reset_time(oc, runner.clock.now())
@@ -411,7 +410,7 @@ def review_task(runner, task: Task, allow_same: bool) -> str:
 def store_review(runner, task: Task, prov: str, run: AgentRun, before_ns: int | None = None) -> str:
     cfg = runner.cfg
     target = review_path(cfg, task.id)
-    text = review_text(prov, run, target, before_ns)
+    text = review_text(cfg.provider_kind(prov), run, target, before_ns)
     if not text.strip():
         raise ReviewBlocked(f"{task.id}: the {prov} reviewer produced no review (exit {run.code}); see "
                             f"{run.out_path} and {run.err_path}")

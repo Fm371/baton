@@ -62,6 +62,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -80,7 +81,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -99,7 +101,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -231,6 +234,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -249,7 +253,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -268,7 +273,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -406,6 +412,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -424,7 +431,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -443,7 +451,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -582,6 +591,7 @@
      "127.0.0.1:27017"
     ]
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [
@@ -609,7 +619,8 @@
      ],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": "<DIR>/claude-settings.json"
+     "settings": "<DIR>/claude-settings.json",
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -632,7 +643,8 @@
      "sandbox_probe": [
       "--probe"
      ],
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 30.0,
@@ -788,6 +800,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -806,7 +819,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -825,7 +839,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -972,6 +987,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -990,7 +1006,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1009,7 +1026,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -1151,6 +1169,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -1169,7 +1188,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1188,7 +1208,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -1332,6 +1353,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -1350,7 +1372,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1369,7 +1392,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -1513,6 +1537,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -1531,7 +1556,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1550,7 +1576,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -1721,6 +1748,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -1739,7 +1767,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1758,7 +1787,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -1896,6 +1926,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -1914,7 +1945,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -1933,7 +1965,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -2071,6 +2104,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -2089,7 +2123,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -2108,7 +2143,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -2285,6 +2321,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -2303,7 +2340,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -2322,7 +2360,8 @@
      "required_env": [],
      "sandbox": null,
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -2460,6 +2499,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -2478,7 +2518,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -2497,7 +2538,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": [],
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -2653,6 +2695,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -2671,7 +2714,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -2690,7 +2734,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -2843,6 +2888,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -2861,7 +2907,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -2880,7 +2927,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -3294,6 +3342,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -3312,7 +3361,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -3331,7 +3381,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -3472,6 +3523,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -3490,7 +3542,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -3509,7 +3562,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,
@@ -3662,6 +3716,7 @@
     "repos": [],
     "services_tcp": []
    },
+   "provider_order": [],
    "providers": {
     "claude": {
      "add_dirs": [],
@@ -3680,7 +3735,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     },
     "codex": {
      "add_dirs": [],
@@ -3699,7 +3755,8 @@
      "required_env": [],
      "sandbox": "workspace-write",
      "sandbox_probe": null,
-     "settings": null
+     "settings": null,
+     "type": null
     }
    },
    "quick_exit_s": 120.0,

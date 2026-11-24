@@ -137,7 +137,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             raise ValueError(f"provider '{self.start}' is not enabled")
         order = [self.start] + [p for p in enabled if p != self.start]
         self.sched = Scheduler([p for p in order if p in enabled],
-                               starting_provider(self.state, cfg.start_provider, provider),
+                               starting_provider(self.state, cfg.start_provider, provider, enabled=enabled),
                                self.state.provider_status(),
                                return_to_preferred=cfg.return_to_start_provider)
         self.stop_reason: str | None = None
@@ -585,18 +585,19 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
     def probe_sandbox(self) -> None:
         """Take Codex out of this run when its sandbox cannot start, before it
         can mark tasks blocked for something that is not their fault."""
-        pc = self.cfg.providers.get("codex")
-        if "codex" not in self.sched.providers or pc is None:
-            return
-        ok, detail = sandbox.probe(pc)
-        if ok is False:
-            self.disable_codex_sandbox(detail)
-        elif ok is None:
-            self.log(f"codex sandbox not checked: {detail}")
+        for name in self.sched.providers:
+            pc = self.cfg.providers[name]
+            if pc.kind != "codex":
+                continue
+            ok, detail = sandbox.probe(pc)
+            if ok is False:
+                self.disable_codex_sandbox(name, detail)
+            elif ok is None:
+                self.log(f"{name} sandbox not checked: {detail}")
 
-    def disable_codex_sandbox(self, detail: str) -> None:
-        self.sched.disable("codex", f"sandbox unusable: {detail}")
-        self.log(f"codex left out of this run: its sandbox cannot start ({detail}). {sandbox.HINT}")
+    def disable_codex_sandbox(self, name: str, detail: str) -> None:
+        self.sched.disable(name, f"sandbox unusable: {detail}")
+        self.log(f"{name} left out of this run: its sandbox cannot start ({detail}). {sandbox.HINT}")
         self.save()
 
     def run_task(self, task: Task, provider: str | None = None) -> None:
@@ -808,7 +809,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
             self.log(f"switch {pick.switched_from} -> {prov} ({pick.reason})")
         elif pick.restricted_from and not ts.attempts:
             self.log(f"{task.id} runs on {prov} ({pick.reason})")
-        if self.cfg.routing.spec(task.resolved_rung, prov) is None:   # preflight rejects this; kept as a guard
+        if self.cfg.spec(task.resolved_rung, prov) is None:   # preflight rejects this; kept as a guard
             self.finish(task, "failed", f"rung {task.resolved_rung} has no {prov} model")
             return _DONE, None
         return _GO, pick
@@ -818,15 +819,18 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         give the task back instead of sleeping: another lane's task may use the free provider first."""
         ts = self.state.task(task.id)
         prov = loop.fixed
+        if task.providers is not None and prov not in task.providers:
+            return _REQUEUE, f"{prov} is no longer allowed by the task's providers list"
         if not self.sched.available(prov, now, self.task_models(task).get(prov)):
             return _REQUEUE, f"{prov} {self.sched._why(prov)}"
         last = ts.providers[-1] if ts.providers else None
         pick = Pick(prov, None)
         if last and last != prov:
             pick.switched_from = last
-            pick.reason = self.sched._why(last) if not self.sched.available(last, now) else "dispatched"
+            pick.reason = (self.sched._why(last) if last in self.sched.status
+                           and not self.sched.available(last, now) else "dispatched")
             self.log(f"switch {last} -> {prov} ({pick.reason})")
-        if self.cfg.routing.spec(task.resolved_rung, prov) is None:   # preflight rejects this; kept as a guard
+        if self.cfg.spec(task.resolved_rung, prov) is None:   # preflight rejects this; kept as a guard
             self.finish(task, "failed", f"rung {task.resolved_rung} has no {prov} model")
             return _DONE, None
         return _GO, pick
@@ -846,7 +850,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         if att.returned_to and not status:
             return self._returned(task, loop, pick, spec, n, att, now)
         oc, status, weak_note = self._read_outcome(task, loop, prov, att, status, now)
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             self.commit_codex_attempt(task, loop.result_path, att.wall_start, _codex_why(att, oc, status), status)
         self._record_metrics(task, loop, pick, spec, n, att, oc, status)
         return _Tried(prov=prov, n=n, att=att, oc=oc, status=status, weak_note=weak_note, now=now)
@@ -859,7 +863,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         missing = missing_for(cfg, task, prov)       # a variable only this provider's run lacks
         if missing:
             raise RunStopped(explain(task, missing))
-        spec = cfg.routing.spec(task.resolved_rung, prov)
+        spec = cfg.spec(task.resolved_rung, prov)
         loop.fresh = False
         ts.resume_pending = None
         ts.attempts += 1
@@ -879,14 +883,14 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         agent_result = self.agent_result_path(task, prov, result_path)
         prompt = self.build_prompt(task, prov, n, ts.last_end, agent_result)
         self.keep_attempt_result(task, n - 1, clear_result=loop.held_status is None)
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             self.clear_codex_files(task)
         self.hook_failed.pop(task.id, None)
         if loop.fixed:
             self.set_running(task, provider=prov, attempt=n,
                              out=str(self.cfg.results_dir / task.id / f"attempt-{n:02d}.{prov}.out"))
         att = self.execute(task, prov, spec, prompt, n, watch=self.return_watch(task, prov, loop))
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             self.promote_codex_files(task, result_path, att.wall_start)
         if self.stop_requested:
             self.commit_leftovers(task, "the run was stopped")
@@ -911,7 +915,8 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         weak_note = ""
         out_text = read_output(att.out_path)         # bounded: a runaway agent can write gigabytes
         err_text = read_output(att.err_path)
-        oc = classify(prov, out_text, err_text, att.exit_code, now, self.tz,
+        kind = cfg.provider_kind(prov)
+        oc = classify(kind, out_text, err_text, att.exit_code, now, self.tz,
                       home_dir(cfg.providers[prov]),
                       datetime.fromtimestamp(att.wall_start, tz=timezone.utc))
         # baton itself ended a timed-out, stalled or stopped attempt: that is not a changed message format
@@ -919,7 +924,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
                    else unmatched_failure_warning(prov, oc, out_text, err_text, att.exit_code))
         if warning:
             self.log(f"task {task.id}: {warning}")
-        if (prov == "codex" and not status and att.exit_code == 0
+        if (kind == "codex" and not status and att.exit_code == 0
                 and not att.timed_out and oc.kind == "success"):
             # no usable result file (missing, stale or without STATUS):
             # take the verdict from the last message of a clean exit only
@@ -958,7 +963,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         prov, back = pick.provider, att.returned_to
         ts = self.state.task(task.id)
         why = f"stopped so the task could go back to {back}"
-        if prov == "codex":
+        if self.cfg.provider_kind(prov) == "codex":
             self.commit_codex_attempt(task, loop.result_path, att.wall_start, why, None)
         else:
             self.commit_leftovers(task, why)
@@ -1004,7 +1009,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         if t.returned:
             return _AGAIN
         self._check_branch_unchanged(task, loop)
-        if t.oc.kind == "sandbox" and t.prov == "codex" and t.status != "done":
+        if t.oc.kind == "sandbox" and self.cfg.provider_kind(t.prov) == "codex" and t.status != "done":
             return self._on_codex_sandbox(task, loop, t)
         if t.status:
             return self._accept_result(task, loop, t)
@@ -1026,10 +1031,10 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         """The provider is broken, not the task: no command ran. Retry elsewhere."""
         ts = self.state.task(task.id)
         loop.result_path.unlink(missing_ok=True)
-        self.disable_codex_sandbox(t.oc.detail)
-        ts.last_end = ("codex could not start its sandbox, so the previous attempt did nothing "
+        self.disable_codex_sandbox(t.prov, t.oc.detail)
+        ts.last_end = (f"{t.prov} could not start its sandbox, so the previous attempt did nothing "
                        f"useful ({t.oc.detail})")
-        self.refresh(f"codex sandbox unusable; moving {task.id} to the next provider")
+        self.refresh(f"{t.prov} sandbox unusable; moving {task.id} to the next provider")
         return _REQUEUE if loop.fixed else _AGAIN
 
     def _on_outcome(self, task: Task, loop: _TaskLoop, t: _Tried) -> str:
@@ -1189,9 +1194,8 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         """One more attempt on another provider whose sandbox may allow what this one forbade."""
         ts = self.state.task(task.id)
         now = self.clock.now()
-        others = [p for p in (task.providers or self.sched.providers) if p != t.prov
-                  and self.sched.available(p, now, self.task_models(task).get(p))
-                  and self.cfg.routing.spec(task.resolved_rung, p) is not None]
+        others = [p for p, model in self.task_models(task).items() if p != t.prov
+                  and (task.providers is None or p in task.providers) and self.sched.available(p, now, model)]
         if not others:
             return None
         loop.env_retried, loop.avoid = True, t.prov
@@ -1225,7 +1229,8 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
     def _on_limit(self, task: Task, t: _Tried) -> str | None:
         oc, prov = t.oc, t.prov
         until, how = self.reset_time(oc, t.now)
-        model = self.task_models(task).get(prov, "")
+        models = self.task_models(task)
+        model = models.get(prov, "")
         if oc.window == "model" and oc.model and oc.model in model:
             # only this model family is limited: tasks on another model of the provider go on
             self.sched.mark_model_limited(prov, oc.model, until)
@@ -1246,7 +1251,9 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         else:
             ts.limit_cycles = 1
         ts.limit_head = head
-        if ts.limit_cycles >= self.cfg.max_limit_cycles:
+        eligible = [p for p in self.sched.providers if task.providers is None or p in task.providers]
+        untried = any(p not in ts.providers and self.sched.available(p, t.now, models.get(p)) for p in eligible)
+        if ts.limit_cycles >= self.cfg.max_limit_cycles and not untried:
             self.finish(task, "failed",
                         f"{ts.limit_cycles} usage-limit outcomes in a row with no new commits or changes "
                         f"(last: {prov}, {oc.source}: {oc.detail}); a limit that never lifts or a message "
@@ -1318,7 +1325,7 @@ class Runner(QueueMixin, HandoffMixin, ProcessMixin, ReportMixin, LanesMixin):
         """provider -> the model id (lower case) this task's rung uses there."""
         out = {}
         for p in self.sched.providers:
-            spec = self.cfg.routing.spec(task.resolved_rung, p) if task.runs_agent else None
+            spec = self.cfg.spec(task.resolved_rung, p) if task.runs_agent else None
             if spec is not None and spec.model:
                 out[p] = spec.model.lower()
         return out

@@ -484,7 +484,7 @@ class FieldTablesTest(unittest.TestCase):
     def test_provider_table_matches_the_allowed_provider_keys(self):
         keys = [f.key for f in cfg_mod.PROVIDER_FIELDS]
         self.assertEqual(len(keys), len(set(keys)))
-        self.assertEqual(set(keys) | {"bin", "env"}, cfg_mod.PROVIDER_KEYS)
+        self.assertEqual(set(keys) | {"bin", "env", "type"}, cfg_mod.PROVIDER_KEYS)
 
     def test_every_field_fills_an_attribute_of_its_dataclass(self):
         config_fields = {f.name for f in dataclasses.fields(cfg_mod.Config)}

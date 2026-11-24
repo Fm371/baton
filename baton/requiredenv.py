@@ -14,6 +14,7 @@ import os
 import re
 
 from .config import Config
+from .providers import provider_env
 from .state import FINISHED, load_state
 from .tasks import Task
 
@@ -50,16 +51,17 @@ def missing_for(cfg: Config, task: Task, prov: str | None = None) -> list[str]:
     every provider the task may use must be able to see the variable (shell, or its `env` table)."""
     if not task.runs_agent:
         return []
-    allowed = [p for p in (task.providers or cfg.enabled_providers()) if p in cfg.providers]
+    allowed = [p for p in cfg.enabled_providers() if task.providers is None or p in task.providers]
     if prov:
         allowed = [prov]
+    environments = {p: provider_env(cfg.providers[p]) for p in allowed}
     out: list[str] = []
     for name in list(cfg.required_env) + list(task.required_env):
-        if not all(_is_set(name, cfg.providers[p].env) for p in allowed):
+        if not all(_is_set(name, env) for env in environments.values()):
             out.append(name)
     for p in allowed:
         pc = cfg.providers[p]
-        out += [n for n in pc.required_env if not _is_set(n, pc.env)]
+        out += [n for n in pc.required_env if not _is_set(n, environments[p])]
     return list(dict.fromkeys(out))
 
 

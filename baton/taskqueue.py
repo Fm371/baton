@@ -168,7 +168,7 @@ class QueueMixin:
     def _apply_setting(self, key: tuple, old, new) -> str | None:
         """Apply one changed setting of baton.toml; a line for the log, or None when it needs a restart."""
         if key[0] == "restart":
-            self._warn_reload(f"baton.toml providers.{key[1]}.{key[2]} changed; "
+            self._warn_reload(f"baton.toml {'.'.join(key[1:])} changed; "
                               "it takes effect when the run is started again")
             return None
         if key[0] == "run":
@@ -188,6 +188,8 @@ class QueueMixin:
             self._warn_reload(f"baton.toml not reloaded: {str(e).splitlines()[0]}")
             return []
         seen, now_vals = self._cfg_seen, self.config_values(new_cfg)
+        if set(new_cfg.providers) != set(self.cfg.providers):
+            self._warn_reload("baton.toml provider names changed; they take effect when the run is started again")
         changes = [line for key, new in now_vals.items() if new != seen.get(key)
                    if (line := self._apply_setting(key, seen.get(key), new))]
         self._cfg_seen = now_vals
@@ -216,11 +218,15 @@ class QueueMixin:
     def config_values(self, cfg) -> dict[tuple, object]:
         """The settings that may change while a run is going, keyed by where they live in baton.toml."""
         out: dict[tuple, object] = {("run", f): getattr(cfg, f) for f in self.RELOAD_RUN_FIELDS}
+        for f in ("provider_order", "start_provider"):
+            out[("restart", "run", f)] = getattr(cfg, f)
         for name, pc in cfg.providers.items():
+            if name not in self.cfg.providers:
+                continue
             for f in self.RELOAD_PROVIDER_FIELDS:
                 out[("providers", name, f)] = getattr(pc, f)
-            for f in ("bin", "enabled"):
-                out[("restart", name, f)] = getattr(pc, f)
+            for f in ("bin", "enabled", "home", "type"):
+                out[("restart", "providers", name, f)] = getattr(pc, f)
         return out
 
     def _warn_reload(self, msg: str) -> None:

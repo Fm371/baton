@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from . import gitutil
 
 KNOWN_PROVIDERS = ("claude", "codex")
+PROVIDER_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
+PROVIDER_HOME_ENV = {"claude": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME"}
 DEFAULT_TEST_PATHS = ["tests/**", "**/__tests__/**", "**/*.test.*", "**/test_*.py"]
 DEFAULT_UI_PATHS = ["src/app/**", "*.tsx"]
 DEFAULT_ENV_FILES = [".env", ".env.local", ".env.development", ".env.development.local"]
@@ -27,7 +29,7 @@ class ConfigError(Exception):
 
 
 RUN_KEYS = {
-    "tasks_dir", "verifiers_dir", "results_dir", "state_dir", "logs_dir", "common_prompt", "start_provider",
+    "tasks_dir", "verifiers_dir", "results_dir", "state_dir", "logs_dir", "common_prompt", "start_provider", "provider_order",
     "timezone", "task_timeout_min", "max_turns", "reset_margin_seconds", "unknown_limit_cooldown_min",
     "max_sleep_hours", "quick_exit_seconds", "max_quick_unknown", "transient_wait_seconds",
     "max_transient_retries", "no_result_retries", "commit_leftovers", "default_base", "watch_repos",
@@ -40,7 +42,7 @@ ENV_LIMITED_ACTIONS = ("note", "retry_other_provider")
 SERVICE_KEYS = {"check", "restart", "timeout_s", "endpoint", "wait_s"}
 PROVIDER_KEYS = {
     "bin", "enabled", "extra_args", "env", "settings", "permission_mode", "effort_flag", "add_dirs",
-    "sandbox", "profile", "home", "known_models", "sandbox_probe", "max_concurrent", "network", "required_env",
+    "sandbox", "profile", "home", "known_models", "sandbox_probe", "max_concurrent", "network", "required_env", "type",
 }
 TOP_LEVEL_KEYS = {"run", "providers", "routing", "plan", "repos", "preflight", "browser_smoke", "real_data_smoke",
                   "services"}
@@ -100,6 +102,11 @@ class ProviderConfig:
     # codex only: let commands inside the workspace-write sandbox use the network (tests that need
     # a real database on localhost hang or fail without it)
     network: bool = False
+    type: str | None = None
+
+    @property
+    def kind(self) -> str:
+        return self.type or self.name
 
 
 @dataclass
@@ -230,9 +237,27 @@ class Config:
     on_event_timeout_s: float = 15
     browser_smoke: dict = field(default_factory=dict)     # [browser_smoke], read by that template
     real_data_smoke: dict = field(default_factory=dict)   # [real_data_smoke]
+    provider_order: list[str] = field(default_factory=list)
 
     def enabled_providers(self) -> list[str]:
-        return [n for n in KNOWN_PROVIDERS if n in self.providers and self.providers[n].enabled]
+        order = dict.fromkeys([*self.provider_order, *KNOWN_PROVIDERS, *self.providers])
+        return [n for n in order if n in self.providers and self.providers[n].enabled]
+
+    def provider_kind(self, name: str) -> str:
+        pc = self.providers.get(name)
+        return pc.kind if pc else name
+
+    def match_providers(self, names: list[str]) -> list[str]:
+        """A CLI kind selects all its accounts; other names select a specific account."""
+        matches = {}
+        for name in names:
+            matches[name] = None
+            if name in KNOWN_PROVIDERS:
+                matches.update(dict.fromkeys(p.name for p in self.providers.values() if p.kind == name))
+        return list(matches)
+
+    def spec(self, rung: str, provider: str) -> RungSpec | None:
+        return self.routing.spec(rung, provider) or self.routing.spec(rung, self.provider_kind(provider))
 
 
 def _path(base: Path, value: str | None, default: str | None = None) -> Path | None:
@@ -518,6 +543,16 @@ def _p_start_provider(v, w, c):
     return _opt_str(v, w) or _default_start_provider(c.providers)
 
 
+def _p_provider_order(v, w, c):
+    order = _str_list(v, w)
+    if len(set(order)) != len(order):
+        raise ConfigError(f"{w} contains duplicate names")
+    for name in order:
+        if name not in c.providers:
+            raise ConfigError(f"{w}: unknown provider '{name}'")
+    return order
+
+
 def _p_test_paths(v, w, c):
     return list(DEFAULT_TEST_PATHS) if v is None else _str_list(v, w)
 
@@ -525,7 +560,7 @@ def _p_test_paths(v, w, c):
 def _p_verifier_providers(v, w, c):
     names = ["claude"] if v is None else _str_list(v, w)
     for name in names:
-        if name not in KNOWN_PROVIDERS:
+        if name not in KNOWN_PROVIDERS and name not in c.providers:
             raise ConfigError(f"run.verifier_providers: unknown provider '{name}'")
     return names
 
@@ -566,6 +601,7 @@ RUN_FIELDS = (
     _Field("logs_dir", "logs_dir", _p_dir("logs")),
     _Field("common_prompt", "common_prompt", _p_dir()),
     _Field("start_provider", "start_provider", _p_start_provider),
+    _Field("provider_order", "provider_order", _p_provider_order),
     _Field("task_timeout_min", "task_timeout_min", _p_float(0, True), 240),
     _Field("max_turns", "max_turns", _p_int(0), 0),
     _Field("reset_margin_seconds", "reset_margin_s", _p_int(0), 180),
@@ -630,7 +666,7 @@ def _p_sandbox_probe(v, w, c):
     return None if v is None else _str_list(v, w)
 
 
-# [providers.<name>]: `bin` and `env` are read first, see _load_provider
+# [providers.<name>]: `type`, `bin` and `env` are read first, see _load_provider
 PROVIDER_FIELDS = (
     _Field("enabled", "enabled", _p_bool, True),
     _Field("extra_args", "extra_args", _p_str_list),
@@ -660,7 +696,8 @@ def _load_timezone(run: dict) -> ZoneInfo | None:
 
 
 def _provider_bin(base: Path, name: str, p: dict) -> str:
-    bin_ = _opt_str(p.get("bin", name), f"providers.{name}.bin") or name
+    default = p.get("type", name)
+    bin_ = _opt_str(p.get("bin", default), f"providers.{name}.bin") or default
     # a relative path with a slash is relative to the config folder
     if "/" in bin_ and not os.path.isabs(os.path.expanduser(bin_)):
         bin_ = str(base / bin_)
@@ -668,21 +705,42 @@ def _provider_bin(base: Path, name: str, p: dict) -> str:
 
 
 def _load_provider(base: Path, name: str, p) -> ProviderConfig:
-    if name not in KNOWN_PROVIDERS:
+    if name not in KNOWN_PROVIDERS and (not isinstance(p, dict) or "type" not in p):
         raise ConfigError(f"unknown provider '{name}' (known: {', '.join(KNOWN_PROVIDERS)})")
     if not isinstance(p, dict):
         raise ConfigError(f"[providers.{name}] must be a table")
     _check_keys(p, PROVIDER_KEYS, f"[providers.{name}]")
+    kind = p.get("type", name)
+    if kind not in KNOWN_PROVIDERS or (name in KNOWN_PROVIDERS and kind != name):
+        raise ConfigError(f"providers.{name}.type must name its CLI ({', '.join(KNOWN_PROVIDERS)})")
+    if not PROVIDER_NAME.fullmatch(name):
+        raise ConfigError(f"invalid provider name '{name}': use letters, digits, hyphens or underscores")
     env = p.get("env", {})
     if not isinstance(env, dict):
         raise ConfigError(f"providers.{name}.env must be a table")
     bin_ = _provider_bin(base, name, p)
     fields = _read_fields(PROVIDER_FIELDS, p, f"providers.{name}", _Ctx(base))
-    provider = ProviderConfig(name=name, bin=bin_, env={str(k): str(v) for k, v in env.items()}, **fields)
-    if provider.network and name != "codex":
+    provider = ProviderConfig(name=name, bin=bin_, env={str(k): str(v) for k, v in env.items()},
+                              type=p.get("type"), **fields)
+    if name not in KNOWN_PROVIDERS:
+        _set_account_home(base, provider)
+    if provider.network and kind != "codex":
         raise ConfigError(f"providers.{name}.network only applies to codex (its sandbox blocks the network "
                           "by default); Claude's access is set in its settings file")
     return provider
+
+
+def _set_account_home(base: Path, pc: ProviderConfig) -> None:
+    """Resolve the account's home once, for both execution and session lookup."""
+    key = PROVIDER_HOME_ENV[pc.kind]
+    home = _path(base, pc.home)
+    env_home = _path(base, pc.env.get(key) or None)
+    if home is None and env_home is None:
+        raise ConfigError(f"providers.{pc.name}.home is required for a named account (or set env.{key})")
+    if home is not None and env_home is not None and home.resolve() != env_home.resolve():
+        raise ConfigError(f"providers.{pc.name}.home and env.{key} must point to the same directory")
+    pc.home = str((home or env_home).resolve())
+    pc.env.pop(key, None)  # the launcher supplies this from the resolved home
 
 
 def _load_providers(base: Path, providers_data) -> dict[str, ProviderConfig]:
@@ -694,7 +752,7 @@ def _load_providers(base: Path, providers_data) -> dict[str, ProviderConfig]:
     return providers
 
 
-def _load_rungs(rungs_data) -> dict[str, dict[str, RungSpec]]:
+def _load_rungs(rungs_data, providers: dict) -> dict[str, dict[str, RungSpec]]:
     if not isinstance(rungs_data, dict):
         raise ConfigError("[routing.rungs] must be a table of [routing.rungs.<name>.<provider>] tables")
     rungs: dict[str, dict[str, RungSpec]] = {}
@@ -704,7 +762,7 @@ def _load_rungs(rungs_data) -> dict[str, dict[str, RungSpec]]:
                               f"(e.g. [routing.rungs.{rung}.claude]), not {per_provider!r}")
         rungs[rung] = {}
         for prov, spec in per_provider.items():
-            if prov not in KNOWN_PROVIDERS:
+            if prov not in KNOWN_PROVIDERS and prov not in providers:
                 raise ConfigError(f"routing.rungs.{rung}: unknown provider '{prov}'")
             if not isinstance(spec, dict) or "model" not in spec:
                 raise ConfigError(f"routing.rungs.{rung}.{prov} needs a model")
@@ -722,10 +780,10 @@ def _load_work_types(work_types_data, rungs: dict) -> dict[str, str]:
     return work_types
 
 
-def _load_routing(routing_data) -> Routing:
+def _load_routing(routing_data, providers: dict) -> Routing:
     if not isinstance(routing_data, dict):
         raise ConfigError("[routing] must be a table")
-    rungs = _load_rungs(routing_data.get("rungs", {}))
+    rungs = _load_rungs(routing_data.get("rungs", {}), providers)
     work_types = _load_work_types(routing_data.get("work_types", {}), rungs)
     if not rungs:
         raise ConfigError("no [routing.rungs] defined")
@@ -760,8 +818,11 @@ def _build(path: Path, data: dict) -> Config:
     _check_keys(run, RUN_KEYS, "[run]")
     tz = _load_timezone(run)
     providers = _load_providers(base, data.get("providers", {}))
-    routing = _load_routing(data.get("routing", {}))
+    routing = _load_routing(data.get("routing", {}), providers)
     values = _read_fields(RUN_FIELDS, run, "run", _Ctx(base, providers))
+    order = values["provider_order"]
+    if order and not run.get("start_provider"):
+        values["start_provider"] = next((n for n in order if providers[n].enabled), values["start_provider"])
     cfg = Config(base_dir=base, timezone=tz, providers=providers, routing=routing, **values)
     _load_sections(cfg, base, data)
     return cfg

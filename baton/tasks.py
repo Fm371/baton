@@ -323,11 +323,12 @@ def _task_paths(path: Path, meta: dict) -> list[str]:
 def _task_providers(path: Path, meta: dict, kind: str, template: str | None, cfg: Config) -> list[str] | None:
     providers = meta.get("providers")
     if providers is None:
-        return list(cfg.verifier_providers) if kind == "verify" and template is None else None
+        return cfg.match_providers(cfg.verifier_providers) if kind == "verify" and template is None else None
+    known = dict.fromkeys([*KNOWN_PROVIDERS, *cfg.providers])
     if (not isinstance(providers, list) or not providers
-            or not all(isinstance(p, str) and p in KNOWN_PROVIDERS for p in providers)):
-        raise _fail(path, f"providers must be a non-empty list of {', '.join(KNOWN_PROVIDERS)}")
-    return providers
+            or not all(isinstance(p, str) and p in known for p in providers)):
+        raise _fail(path, f"providers must be a non-empty list of {', '.join(known)}")
+    return cfg.match_providers(providers)
 
 
 def _task_lane(path: Path, meta: dict) -> str | None:

@@ -17,7 +17,7 @@ import re
 import subprocess
 
 from .config import ProviderConfig
-from .providers import resolve_bin
+from .providers import provider_env, resolve_bin
 
 SANDBOX_ERROR_RE = re.compile(
     r"bwrap:[^\n]{0,160}?(?:Failed RTM_NEWADDR|Operation not permitted|Permission denied|namespace|uid map)",
@@ -50,13 +50,13 @@ def probe(pc: ProviderConfig) -> tuple[bool | None, str]:
         return True, "no sandbox configured"
     args = DEFAULT_PROBE if pc.sandbox_probe is None else pc.sandbox_probe
     if not args:
-        return None, "sandbox probe turned off (providers.codex.sandbox_probe = [])"
+        return None, f"sandbox probe turned off (providers.{pc.name}.sandbox_probe = [])"
     path = resolve_bin(pc)
     if not path:
         return None, f"{pc.bin} not found"
     try:
         p = subprocess.run([path, *args], capture_output=True, text=True, timeout=60,
-                           env={**os.environ, **pc.env}, stdin=subprocess.DEVNULL)
+                           env={**os.environ, **provider_env(pc)}, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.TimeoutExpired) as e:
         return None, f"sandbox probe did not run: {e}"
     if p.returncode == 0:

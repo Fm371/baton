@@ -194,6 +194,9 @@ def cmd_mark(args) -> int:
 def cmd_retry(args) -> int:
     from . import ops
     cfg = _cfg(args)
+    if args.provider and args.provider not in cfg.enabled_providers():
+        print(f"error: --provider {args.provider}: that provider is not enabled", file=sys.stderr)
+        return 2
     try:
         before = ops.prepare_retry(cfg, args.id)
     except ops.OpsError as e:
@@ -360,14 +363,14 @@ def _add_run_commands(sub) -> None:
     p.add_argument("--only", metavar="ID", help="run just this task, even if it finished before")
     p.add_argument("--force", action="store_true",
                    help="with --only: run the task even when a verifier it depends on is not done")
-    p.add_argument("--provider", choices=["claude", "codex"],
+    p.add_argument("--provider", metavar="NAME",
                    help="begin from this provider instead of start_provider (also for tasks already mid-attempt)")
     p.add_argument("--follow", action="store_true",
                    help="keep running when the queue is empty: pick up new task files and approvals "
                         "until `baton stop` or Ctrl+C")
     p.set_defaults(func=cmd_run)
     p = _with_config(sub.add_parser("plan", help="check everything and show the plan; run nothing"))
-    p.add_argument("--provider", choices=["claude", "codex"], help="show the plan as `run --provider` would run it")
+    p.add_argument("--provider", metavar="NAME", help="show the plan as `run --provider` would run it")
     p.set_defaults(func=cmd_plan)
     p = _with_config(sub.add_parser("stop", help="finish the current task, then end the running baton cleanly"))
     p.set_defaults(func=cmd_stop)
@@ -408,7 +411,7 @@ def _add_operator_commands(sub) -> None:
     p = _with_config(sub.add_parser("retry", help="clear a task's state and run just that task again"))
     p.add_argument("id")
     p.add_argument("--force", action="store_true", help="run it even when a verifier or checkpoint before it is open")
-    p.add_argument("--provider", choices=["claude", "codex"], help="begin from this provider")
+    p.add_argument("--provider", metavar="NAME", help="begin from this provider")
     p.set_defaults(func=cmd_retry)
     p = _with_config(sub.add_parser("resume", help="interrupt one unfinished attempt and continue preserved work"))
     p.add_argument("id")
@@ -416,7 +419,7 @@ def _add_operator_commands(sub) -> None:
     p = sub.add_parser("providers", help="provider state: `baton providers reset NAME` clears a stale limit")
     psub = p.add_subparsers(dest="providers_cmd", required=True)
     pr = _with_config(psub.add_parser("reset", help="forget a provider's limit and disabled flag"))
-    pr.add_argument("name", choices=["claude", "codex"])
+    pr.add_argument("name")
     pr.set_defaults(func=cmd_providers)
     p = sub.add_parser("classify", help="classify a saved CLI output (limit / transient / auth / ...)")
     p.add_argument("provider", choices=["claude", "codex"])

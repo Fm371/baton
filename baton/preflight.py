@@ -12,8 +12,8 @@ from pathlib import Path
 
 from . import __version__, branches, gitutil, timefmt, versioninfo
 from .clock import local_zone
-from .config import Config
-from .providers import build_command, resolve_bin
+from .config import PROVIDER_HOME_ENV, Config
+from .providers import build_command, provider_env, resolve_bin
 from .state import FINISHED, expire_limits, load_state, mid_attempt, starting_provider
 from . import codexmodels, notverified, sandbox, services, uipaths
 from .autocheck import schedule_preflight
@@ -106,8 +106,8 @@ def heavy_model_warnings(cfg: Config, enabled: list[str]) -> list[str]:
     out = []
     for name in enabled:
         heavy = []
-        for rung, specs in cfg.routing.rungs.items():
-            spec = specs.get(name)
+        for rung in cfg.routing.rungs:
+            spec = cfg.spec(rung, name)
             if spec is None:
                 continue
             if spec.effort.lower() in HEAVY_EFFORTS or any(p in spec.model.lower() for p in HEAVY_MODEL_PARTS):
@@ -252,7 +252,7 @@ def _check_saved_state(ctx: _Ctx) -> None:
     state0 = load_state(cfg.state_dir / "run.json")
     start = ctx.provider or cfg.start_provider
     if state0.current and state0.current != start and start in ctx.enabled:
-        began = starting_provider(state0, cfg.start_provider, ctx.provider)
+        began = starting_provider(state0, cfg.start_provider, ctx.provider, enabled=ctx.enabled)
         if began != start:      # a task really is mid-attempt on another provider: say what happens
             ctx.warnings.append(f"the saved state says current = {state0.current} with task(s) "
                                 f"{', '.join(mid_attempt(state0))} mid-attempt: they continue on {state0.current}, "
@@ -273,17 +273,17 @@ def _check_add_dirs(ctx: _Ctx, name: str, pc) -> None:
 
 def _check_claude_flags(ctx: _Ctx, pc, path: str) -> None:
     try:
-        help_text = subprocess.run([path, "--help"], capture_output=True, text=True, timeout=30).stdout
+        help_text = subprocess.run([path, "--help"], capture_output=True, text=True, timeout=30,
+                                   env={**os.environ, **provider_env(pc)}).stdout
     except (OSError, subprocess.TimeoutExpired):
         help_text = ""
     if not help_text:
         return
     if "--output-format" not in help_text:
-        ctx.errors.append("claude: this version has no --output-format flag; update Claude Code")
-    uses_effort = any(s.effort for r in ctx.cfg.routing.rungs.values()
-                      for p, s in r.items() if p == "claude")
+        ctx.errors.append(f"{pc.name}: this version has no --output-format flag; update Claude Code")
+    uses_effort = any(s.effort for r in ctx.cfg.routing.rungs if (s := ctx.cfg.spec(r, pc.name)))
     if uses_effort and pc.effort_flag and "--effort" not in help_text:
-        ctx.warnings.append("claude: no --effort flag in this version; set providers.claude."
+        ctx.warnings.append(f"{pc.name}: no --effort flag in this version; set providers.{pc.name}."
                             "effort_flag = false (CLAUDE_CODE_EFFORT_LEVEL is still set)")
 
 
@@ -297,7 +297,7 @@ def _check_provider(ctx: _Ctx, name: str) -> None:
     if pc.settings and not os.path.isfile(pc.settings):
         ctx.errors.append(f"{name}: settings file not found: {pc.settings}")
     _check_add_dirs(ctx, name, pc)
-    if name == "claude":
+    if pc.kind == "claude":
         _check_claude_flags(ctx, pc, path)
 
 
@@ -309,16 +309,24 @@ def _check_providers(ctx: _Ctx) -> None:
 # --- checks that need the task files -----------------------------------------------------------
 
 def _check_codex_sandbox(ctx: _Ctx) -> None:
-    if "codex" not in ctx.enabled or not resolve_bin(ctx.cfg.providers["codex"]):
+    for name in ctx.enabled:
+        pc = ctx.cfg.providers[name]
+        if pc.kind == "codex":
+            _check_account_sandbox(ctx, pc)
+
+
+def _check_account_sandbox(ctx: _Ctx, pc) -> None:
+    if not resolve_bin(pc):
         return
-    ok, detail = sandbox.probe(ctx.cfg.providers["codex"])
+    ok, detail = sandbox.probe(pc)
     if ok is False:
-        ctx.warnings.append(f"codex: its sandbox cannot start ({detail}). Codex will be left out of this "
+        label = "Codex" if pc.name == "codex" else pc.name
+        ctx.warnings.append(f"{pc.name}: its sandbox cannot start ({detail}). {label} will be left out of this "
                             f"run. {sandbox.HINT}")
     elif ok is None and "turned off" not in detail:
-        ctx.warnings.append(f"codex: sandbox not checked: {detail}")
+        ctx.warnings.append(f"{pc.name}: sandbox not checked: {detail}")
     elif ok:
-        ctx.warnings.extend(sandboxprobe.check(ctx.cfg.providers["codex"]))
+        ctx.warnings.extend(sandboxprobe.check(pc))
 
 
 def _check_services(ctx: _Ctx) -> None:
@@ -328,13 +336,14 @@ def _check_services(ctx: _Ctx) -> None:
 
 
 def _check_codex_models(ctx: _Ctx) -> None:
-    if "codex" not in ctx.enabled:
-        return
-    used = {t.resolved_rung for t in ctx.tasks
-            if t.runs_agent and (not t.providers or "codex" in t.providers)}
-    model_errors, model_warnings = codexmodels.check(ctx.cfg, used)
-    ctx.errors.extend(model_errors)
-    ctx.warnings.extend(model_warnings)
+    for name in ctx.enabled:
+        if ctx.cfg.provider_kind(name) != "codex":
+            continue
+        used = {t.resolved_rung for t in ctx.tasks
+                if t.runs_agent and (not t.providers or name in t.providers)}
+        model_errors, model_warnings = codexmodels.check(ctx.cfg, used, name)
+        ctx.errors.extend(model_errors)
+        ctx.warnings.extend(model_warnings)
 
 
 def _check_repo_suites(ctx: _Ctx) -> None:
@@ -377,10 +386,10 @@ def _check_task_providers(ctx: _Ctx) -> None:
         if not t.runs_agent:
             continue
         if t.providers and not set(t.providers) & set(ctx.enabled):
-            where = "run.verifier_providers" if t.is_verifier and t.providers == cfg.verifier_providers \
+            where = "run.verifier_providers" if t.is_verifier and t.providers == cfg.match_providers(cfg.verifier_providers) \
                 else "its providers"
             ctx.errors.append(f"task {t.id}: none of {where} ({', '.join(t.providers)}) is enabled")
-        if t.is_verifier and t.providers and "codex" in t.providers:
+        if t.is_verifier and any(cfg.provider_kind(p) == "codex" for p in (t.providers or [])):
             _check_codex_verifier(ctx, t)
 
 
@@ -390,7 +399,7 @@ def _check_codex_verifier(ctx: _Ctx, t: Task) -> None:
     cfg = ctx.cfg
     if load_state(cfg.state_dir / "run.json").task(t.id).status in FINISHED:
         return
-    where = "run.verifier_providers" if t.providers == cfg.verifier_providers else "its providers"
+    where = "run.verifier_providers" if t.providers == cfg.match_providers(cfg.verifier_providers) else "its providers"
     text = (f"verifier {t.id}: {where} includes codex, which cannot hide files from the agent "
             "(`codex exec` has no read restriction), so the verifier would see implementer output")
     if cfg.allow_codex_verifiers:
@@ -413,7 +422,7 @@ def _check_rungs(ctx: _Ctx, t: Task) -> None:
     for p in ctx.enabled:
         if t.providers and p not in t.providers:
             continue
-        if ctx.cfg.routing.spec(t.resolved_rung, p) is None:
+        if ctx.cfg.spec(t.resolved_rung, p) is None:
             ctx.errors.append(f"task {t.id}: rung '{t.resolved_rung}' has no model for {p}")
 
 
@@ -565,7 +574,7 @@ def _check_lanes(ctx: _Ctx) -> None:
         ctx.warnings.append(f"lanes = {cfg.lanes}, but the agent tasks share {len(agent_lanes)} lane: "
                             "tasks in one repository never run at the same time, so nothing runs in parallel")
     verifier_tasks = [t for t in tasks if t.is_verifier and t.runs_agent]
-    if verifier_tasks and "codex" in enabled:
+    if verifier_tasks and any(cfg.provider_kind(p) == "codex" for p in enabled):
         ctx.warnings.append("lanes: a Codex task in another lane can read a verifier's uncommitted test files "
                             "in its repository while the verifier runs; keep verifier_providers = [\"claude\"] "
                             "and set providers = [\"claude\"] on tasks you do not want to overlap with verifiers")
@@ -680,7 +689,7 @@ def _limit_lines(state, tz, now: datetime) -> list[str]:
 def _plan_header(cfg: Config, state, enabled: list[str], start: str, provider: str | None,
                  tz, now: datetime) -> list[str]:
     lines = [f"providers: {' > '.join([start] + [p for p in enabled if p != start])}"
-             f" (begins on: {starting_provider(state, cfg.start_provider, provider)})"]
+             f" (begins on: {starting_provider(state, cfg.start_provider, provider, enabled=enabled)})"]
     lines += _limit_lines(state, tz, now)
     if cfg.verifiers_last:
         lines.append("verifiers run last (verifiers_last): a verifier nobody depends on runs after every other task; "
@@ -704,7 +713,7 @@ def _task_models(cfg: Config, t: Task, enabled: list[str]) -> str:
     provs = [p for p in enabled if not t.providers or p in t.providers]
     return ", ".join(
         f"{p}: {s.model}{' ' + s.effort if s.effort else ''}"
-        for p in provs if (s := cfg.routing.spec(t.resolved_rung, p)))
+        for p in provs if (s := cfg.spec(t.resolved_rung, p)))
 
 
 def _branch_exists_note(t: Task, by_id: dict[str, Task]) -> str:
@@ -756,16 +765,22 @@ def _restore_lines(tasks: list[Task]) -> list[str]:
 
 
 def _first_command_lines(cfg: Config, tasks: list[Task], enabled: list[str], start: str) -> list[str]:
-    if not tasks:
-        return []
     t = next((x for x in tasks if x.runs_agent), None)
+    if t is None:
+        return []
     # the provider that task would really begin on: the first of the run's order it may use
-    first = next((p for p in [start] + [e for e in enabled if e != start]
-                  if p in enabled and (not t or not t.providers or p in t.providers)), start)
-    spec = t and cfg.routing.spec(t.resolved_rung, first)
+    allowed = t.providers or enabled
+    first = next((p for p in [start, *enabled] if p in enabled and p in allowed), start)
+    if first not in cfg.providers:
+        return []
+    spec = cfg.spec(t.resolved_rung, first)
     if not spec:
         return []
-    argv, env = build_command(cfg.providers[first], spec, t.max_turns or cfg.max_turns or None)
+    pc = cfg.providers[first]
+    argv, env = build_command(pc, spec, t.max_turns or cfg.max_turns or None)
+    if pc.name != pc.kind:
+        key = PROVIDER_HOME_ENV[pc.kind]
+        argv = ["env", f"{key}={env[key]}", *argv]
     return ["", f"first command (cwd {t.repo}, prompt on stdin):", "  " + shlex.join(argv)]
 
 

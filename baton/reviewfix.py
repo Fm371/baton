@@ -81,7 +81,7 @@ def fixer_problem(runner, task: Task, impl: str) -> str | None:
                 "be that provider")
     if impl not in cfg.enabled_providers():
         return f"{impl}, which implemented it, is not enabled in baton.toml"
-    if cfg.routing.spec(task.resolved_rung, impl) is None:
+    if cfg.spec(task.resolved_rung, impl) is None:
         return f"{impl} has no model for rung {task.resolved_rung} in [routing.rungs]"
     if not resolve_bin(cfg.providers[impl]):
         return f"{impl}: '{cfg.providers[impl].bin}' not found or not executable"
@@ -108,7 +108,7 @@ def build_fix_prompt(cfg: Config, task: Task, prov: str, parsed: ParsedReview, r
                      report: Path, note: str) -> str:
     common = expand(cfg.common_prompt.read_text(encoding="utf-8"), cfg.base_dir).strip() if cfg.common_prompt else ""
     items = "\n".join(f"- {key} {f.label()}" for key, f in numbered(parsed))
-    commit = ("Commit your work on the current branch with a normal commit." if prov == "claude" else
+    commit = ("Commit your work on the current branch with a normal commit." if cfg.provider_kind(prov) == "claude" else
               "Do not run git commit: baton commits for you. Put a line `COMMIT: <conventional commit message>` "
               "at the top of the report.")
     again = f"\n\nNote: {note}\n" if note else ""
@@ -185,14 +185,14 @@ def note_limit(runner, task: Task, impl: str, oc) -> None:
 def run_attempts(runner, task: Task, impl: str, parsed: ParsedReview, review_text: str, rnd: int):
     """Attempts until one ends without a limit or a transient error. Returns the last Attempt."""
     cfg = runner.cfg
-    spec = cfg.routing.spec(task.resolved_rung, impl)
+    spec = cfg.spec(task.resolved_rung, impl)
     report, note, transient = report_path(cfg, task.id), "", MAX_TRANSIENT
     for k in range(1, cfg.max_limit_cycles + MAX_TRANSIENT + 2):
         wait_until_available(runner, task, impl)
         report.parent.mkdir(parents=True, exist_ok=True)
         prompt = build_fix_prompt(cfg, task, impl, parsed, review_text, report, note)
         att = runner.execute(task, impl, spec, prompt, 900 + rnd * 10 + min(k, 9))
-        oc = classify(impl, read_output(att.out_path), read_output(att.err_path), att.exit_code,
+        oc = classify(cfg.provider_kind(impl), read_output(att.out_path), read_output(att.err_path), att.exit_code,
                       runner.clock.now(), runner.tz, home_dir(cfg.providers[impl]), None)
         if oc.kind == "limit":
             note_limit(runner, task, impl, oc)
@@ -225,12 +225,12 @@ def read_answers(runner, task: Task, att, impl: str) -> dict[str, tuple[str, str
     path = report_path(runner.cfg, task.id)
     text = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
     answers = parse_answers(text)
-    return answers or parse_answers(final_message(impl, read_output(att.out_path)))
+    return answers or parse_answers(final_message(runner.cfg.provider_kind(impl), read_output(att.out_path)))
 
 
 def commit_fix(runner, task: Task, att, impl: str) -> str | None:
     """Commit what the fixer left (Codex cannot commit itself). Returns why some work stays uncommitted."""
-    if impl == "codex":
+    if runner.cfg.provider_kind(impl) == "codex":
         runner.commit_codex_attempt(task, report_path(runner.cfg, task.id), att.wall_start, "review fix", None)
     return runner.commit_leftovers(task, "left uncommitted by the review fix")
 

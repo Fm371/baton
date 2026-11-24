@@ -12,6 +12,7 @@ put into them. A string runs through /bin/sh (so a pipe or a quoted argument wor
 
 from __future__ import annotations
 
+import os
 import socket
 import subprocess
 import sys
@@ -121,7 +122,8 @@ SANDBOX_SCRIPT = (
 )
 
 
-def sandbox_can_connect(argv_prefix: list[str], addr: str, timeout_s: float = 30.0) -> tuple[bool | None, str]:
+def sandbox_can_connect(argv_prefix: list[str], addr: str, timeout_s: float = 30.0,
+                        *, env: dict[str, str] | None = None) -> tuple[bool | None, str]:
     """Try the connection from inside a sandbox. `argv_prefix` is the sandbox command up to the program
     to run (for Codex: [codex, sandbox, "--"]). True: reached. False: the sandbox blocked it. None: the
     probe itself did not work (unknown syntax in this CLI version), nothing can be said."""
@@ -129,7 +131,7 @@ def sandbox_can_connect(argv_prefix: list[str], addr: str, timeout_s: float = 30
     try:
         p = subprocess.run([*argv_prefix, sys.executable, "-c", SANDBOX_SCRIPT, host.strip("[]"), port],
                            capture_output=True, text=True, errors="replace", timeout=timeout_s,
-                           stdin=subprocess.DEVNULL)
+                           stdin=subprocess.DEVNULL, env=env)
     except (OSError, subprocess.TimeoutExpired) as e:
         return None, f"the sandbox probe did not run: {e}"
     out = (p.stdout or "")
@@ -169,21 +171,21 @@ def _sandbox_reach_finding(codex, addr: str) -> tuple[str | None, str | None]:
     """(error, warning) about reaching `addr` from inside Codex's sandbox; (None, None) when it can or
     there is no usable sandbox to try it from."""
     from . import sandbox
-    from .providers import CODEX_NETWORK_ARGS, resolve_bin
+    from .providers import CODEX_NETWORK_ARGS, provider_env, resolve_bin
 
     path = resolve_bin(codex)
     if not path or sandbox.probe(codex)[0] is not True:
         return None, None       # the sandbox warnings already say so
     prefix = [path, "sandbox", *(CODEX_NETWORK_ARGS if codex.network else ()), "--"]
-    reached, why = sandbox_can_connect(prefix, addr)
+    reached, why = sandbox_can_connect(prefix, addr, env={**os.environ, **provider_env(codex)})
     if reached is False:
-        return (f"codex's sandbox cannot reach {addr} ({why})"
-                + (" even with providers.codex.network = true" if codex.network
+        return (f"{codex.name}'s sandbox cannot reach {addr} ({why})"
+                + (f" even with providers.{codex.name}.network = true" if codex.network
                    else "; tests that need it would hang or fail inside Codex. Set "
-                        "[providers.codex] network = true, or keep those tasks on Claude (providers = [\"claude\"])"),
+                        f"[providers.{codex.name}] network = true, or keep those tasks on Claude (providers = [\"claude\"])"),
                 None)
     if reached is None:
-        return None, f"could not check {addr} from inside codex's sandbox: {why}"
+        return None, f"could not check {addr} from inside {codex.name}'s sandbox: {why}"
     return None, None
 
 
@@ -192,21 +194,21 @@ def _tcp_findings(cfg: Config, enabled: list[str]) -> tuple[list[str], list[str]
 
     errors: list[str] = []
     warnings: list[str] = []
-    codex = cfg.providers.get("codex")
-    if codex and codex.network and codex.sandbox not in ("workspace-write", None, ""):
-        warnings.append(f"providers.codex.network = true has no effect with sandbox = \"{codex.sandbox}\"")
-    from_sandbox = bool(codex and "codex" in enabled and codex.sandbox not in sandbox.NO_SANDBOX)
+    accounts = [pc for pc in cfg.providers.values() if pc.kind == "codex"]
+    for pc in accounts:
+        if pc.network and pc.sandbox not in ("workspace-write", None, ""):
+            warnings.append(f"providers.{pc.name}.network = true has no effect with sandbox = \"{pc.sandbox}\"")
+    sandboxed = [pc for pc in accounts if pc.name in enabled and pc.sandbox not in sandbox.NO_SANDBOX]
     for addr in cfg.preflight.services_tcp:
         ok, detail = host_can_connect(addr)
         if not ok:
             errors.append(f"preflight.services_tcp: {addr} is not reachable from this machine ({detail}); "
                           "start the service before the run")
             continue
-        if not from_sandbox:
-            continue
-        err, warn = _sandbox_reach_finding(codex, addr)
-        errors += [err] if err else []
-        warnings += [warn] if warn else []
+        for pc in sandboxed:
+            err, warn = _sandbox_reach_finding(pc, addr)
+            errors += [err] if err else []
+            warnings += [warn] if warn else []
     return errors, warnings
 
 

@@ -3,10 +3,8 @@
 The rule:
   * stay on the current provider until it is limited (sticky while a task is
     running; a provider coming back is not a reason to switch it mid-task);
-  * a task that has not started an attempt yet begins on the preferred
-    provider (the first in the list, `start_provider`) whenever that one is
-    available, so a switch to the other provider lasts only while the
-    preferred one is limited;
+  * a task that has not started an attempt yet prefers the first available
+    provider in priority order, beginning with `start_provider`;
   * when it is limited, move to another available provider;
   * when every provider is limited, sleep until the earliest reset and
     continue on that provider.
@@ -233,12 +231,15 @@ class Scheduler:
         return _earliest_reset(self.providers, self.status, ok, allowed, now, models)
 
     def _back_to_preferred(self, ok: list[str], now: datetime, fresh: bool, models: dict[str, str]) -> Pick | None:
-        first = self.providers[0]
-        if (fresh and self.return_to_preferred and self.current != first and first in ok
-                and self.available(first, now, models.get(first))):
-            prev, self.current = self.current, first
-            self._clear(first, now)
-            return Pick(first, None, switched_from=prev, reason=f"back to the preferred provider {first}")
+        if not fresh or not self.return_to_preferred:
+            return None
+        for p in self.providers[:self.providers.index(self.current)]:
+            if self.current not in ok and p != self.providers[0]:
+                break  # a task pinned elsewhere should not move the run
+            if p in ok and self.available(p, now, models.get(p)):
+                prev, self.current = self.current, p
+                self._clear(p, now)
+                return Pick(p, None, switched_from=prev, reason=f"back to the preferred provider {p}")
         return None
 
     def _restricted(self, ok: list[str], now: datetime, fresh: bool, models: dict[str, str]) -> Pick | None:
@@ -260,16 +261,12 @@ class Scheduler:
         return None
 
     def _switch(self, ok: list[str], now: datetime, fresh: bool, models: dict[str, str]) -> Pick | None:
-        for p in self._others():
+        for p in ok:
             if p in ok and self.available(p, now, models.get(p)):
                 prev, self.current = self.current, p
                 self._clear(p, now)
                 return Pick(p, None, switched_from=prev, reason=self._why(prev))
         return None
-
-    def _others(self) -> list[str]:
-        i = self.providers.index(self.current)
-        return self.providers[i + 1:] + self.providers[:i]
 
     def _clear(self, p: str, now: datetime) -> None:
         s = self.status[p]

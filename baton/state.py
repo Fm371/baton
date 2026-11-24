@@ -246,11 +246,12 @@ def mid_attempt(st: RunState) -> list[str]:
             if t.attempts > 0 and (t.status == "running" or (t.status == "waiting" and t.providers))]
 
 
-def starting_provider(st: RunState, start: str, override: str | None = None) -> str:
+def starting_provider(st: RunState, start: str, override: str | None = None,
+                      *, enabled: list[str] | None = None) -> str:
     """The provider a run begins on. The state's `current` only matters while a
     task is mid-attempt; otherwise `start_provider` (or the --provider override) wins."""
     if override:
         return override
-    if st.current and mid_attempt(st):
+    if st.current and (enabled is None or st.current in enabled) and mid_attempt(st):
         return st.current
     return start

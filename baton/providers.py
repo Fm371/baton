@@ -7,7 +7,7 @@ import os
 import shutil
 from pathlib import Path
 
-from .config import ProviderConfig, RungSpec
+from .config import PROVIDER_HOME_ENV, ProviderConfig, RungSpec
 
 
 # `[providers.codex] network = true`: commands inside the workspace-write sandbox may use the network
@@ -62,11 +62,18 @@ def build_command(pc: ProviderConfig, spec: RungSpec, max_turns: int | None,
                   settings: str | None = None, add_dirs: list[str] | None = None,
                   ) -> tuple[list[str], dict[str, str]]:
     """settings and add_dirs override the provider's own values."""
-    env = dict(pc.env)
-    builder = COMMAND_BUILDERS.get(pc.name)
+    env = provider_env(pc)
+    builder = COMMAND_BUILDERS.get(pc.kind)
     if builder is None:
         raise ValueError(pc.name)
     return builder(pc, spec, max_turns, settings, add_dirs, env), env
+
+
+def provider_env(pc: ProviderConfig) -> dict[str, str]:
+    env = dict(pc.env)
+    if pc.name != pc.kind and pc.home:
+        env[PROVIDER_HOME_ENV[pc.kind]] = pc.home
+    return env
 
 
 def resolve_bin(pc: ProviderConfig) -> str | None:
@@ -79,8 +86,6 @@ def home_dir(pc: ProviderConfig) -> Path | None:
     """Where the CLI keeps its session files, for the limit fallback."""
     if pc.home:
         return Path(pc.home)
-    if pc.name == "claude":
-        return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
-    if pc.name == "codex":
-        return Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+    if key := PROVIDER_HOME_ENV.get(pc.kind):
+        return Path(pc.env.get(key) or os.environ.get(key) or Path.home() / f".{pc.kind}")
     return None

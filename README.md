@@ -40,6 +40,9 @@ baton --version
 You also need `git` and the tools it drives, installed and logged in: `claude` (Claude Code) and, for the
 switch, `codex`. With only one of them, set `enabled = false` on the other provider.
 
+You can configure several logins for either CLI and give them a fallback order. See the
+[Business-to-Personal Codex example](docs/configuration.md#codex-business-then-personal).
+
 ## Five-minute start
 
 ```bash

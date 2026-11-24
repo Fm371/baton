@@ -19,7 +19,7 @@ import subprocess
 import sys
 
 from .config import ProviderConfig
-from .providers import CODEX_NETWORK_ARGS, resolve_bin
+from .providers import CODEX_NETWORK_ARGS, provider_env, resolve_bin
 from .sandbox import NO_SANDBOX
 
 SCRIPT = r"""
@@ -82,7 +82,7 @@ def _provider_flags(pc: ProviderConfig) -> list[str]:
     return flags
 
 
-FIX = ("set `[providers.codex] network = true` in baton.toml (it adds "
+FIX = ("set `[providers.{name}] network = true` in baton.toml (it adds "
        "`-c sandbox_workspace_write.network_access=true`). Be aware that this opens the whole internet "
        "to the agent, not only localhost; the alternative is to run such tests outside the sandbox "
        "(a verifier on Claude, or `repo-suite`, which baton runs itself)")
@@ -99,7 +99,7 @@ def check(pc: ProviderConfig, runner=None) -> list[str]:
     prefix = sandbox_prefix(pc, path)
     if prefix is None:
         return []
-    env = {**os.environ, **pc.env}
+    env = {**os.environ, **provider_env(pc)}
     host = runner([sys.executable, "-c", SCRIPT], env)
     inside = runner([*prefix, sys.executable, "-c", SCRIPT], env)
     if host is None or inside is None:
@@ -109,8 +109,9 @@ def check(pc: ProviderConfig, runner=None) -> list[str]:
     if not blocked:
         return []
     already = bool(getattr(pc, "network", False))
-    return [f"codex: the sandbox refuses {' and '.join(blocked)} that this machine allows. Test suites that "
+    setting = f"`[providers.{pc.name}] network = true`"
+    return [f"{pc.name}: the sandbox refuses {' and '.join(blocked)} that this machine allows. Test suites that "
             "build an event loop (Starlette TestClient, asyncio) or connect to a local database will stall or "
             "fail inside it and their tasks end `partial`. "
-            + ("`[providers.codex] network = true` is already set, so the restriction comes from somewhere else "
-               "(the sandbox mode or the launch environment)." if already else f"To allow it, {FIX}.")]
+            + (f"{setting} is already set, so the restriction comes from somewhere else "
+               "(the sandbox mode or the launch environment)." if already else f"To allow it, {FIX.format(name=pc.name)}.")]
