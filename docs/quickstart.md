@@ -8,13 +8,12 @@ From nothing to a first successful run in about ten minutes, on a throwaway repo
 The package is named `baton-runner`; the command is `baton`.
 
 ```bash
-git clone https://github.com/fm371/baton ~/tools/baton
-pipx install ~/tools/baton               # or: pip install --user ~/tools/baton
+pipx install baton-runner               # or: pip install --user baton-runner
 baton --version
 ```
 
-To hack on baton itself use `pip install --user -e ~/tools/baton` (see [development.md](development.md)).
-Without installing: `PYTHONPATH=~/tools/baton python3 -m baton --version`.
+The latest unreleased code: `pipx install git+https://github.com/Fm371/baton`. To hack on baton itself, clone
+it and use `pip install --user -e .` (see [development.md](development.md)).
 
 You also need the tools baton drives, installed and **logged in** as the user that will run baton:
 

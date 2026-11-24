@@ -42,7 +42,7 @@ baton itself has no dependencies.
 **1. Install**
 
 ```bash
-pipx install git+https://github.com/fm371/baton     # the command is `baton`
+pipx install baton-runner     # the command is `baton`
 ```
 
 **2. Create a workspace and a throwaway repository to try it on**
